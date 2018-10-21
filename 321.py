@@ -1,8 +1,10 @@
 import telebot
+import os
 from telebot import types
 import urllib.request as urllib2
-
+from flask import Flask, request
 bot = telebot.Telebot('617079598:AAGfLSs8LmTNRw8m0CBQI6vIKYHU14FJ8uQ')
+server = Flask(__name__)
 
 
 
@@ -37,10 +39,6 @@ def link_text(message):
     msg = bot.send_message(message.chat.id, 'Выберите формат файла',
                      reply_markup=keyboard)
     bot.register_next_step_handler(msg, callback_inline)
-
-
-
-
 
 
 @bot.callback_query_handler(func=lambda call: True)
@@ -78,15 +76,24 @@ def callback_inline(call):
                 bot.send_document(from_chat_id, doc, caption="сюда запишу кол-во страниц")
                 doc.close()
 
-
-
-
 @bot.message_handler(content_types=['document'])
 def handle_text(message):
     from_chat_id = -1001302729558
     chat_id = message.from_user.id
     message_id = message.message_id
     bot.forward_message(from_chat_id, chat_id, message_id)
+@server.route('/' + TOKEN, methods=['POST'])
+def getMessage():
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "!", 200
 
-if __name__ == '__main__':
-    bot.polling(none_stop=True)
+
+@server.route("/")
+def webhook():
+    bot.remove_webhook()
+    bot.set_webhook(url='https://flask-est-1996.herokuapp.com/' + TOKEN)
+    return "!", 200
+
+
+if __name__ == "__main__":
+    server.run(host="0.0.0.0", port=int(os.environ.get('PORT', 5000)))
