@@ -1,7 +1,7 @@
 import os
 from flask import Flask, request
 import telebot
-import urllib
+import urllib.request
 TOKEN = "696434286:AAGtH9kExLEAiX4m1eUl2CyM1MBkUmcqWco"
 #TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
@@ -24,7 +24,7 @@ def info_message(message):
     elif 'https:' in message.text:
         url = message.text
         filename = 'filename.doc'
-        urllib.urlretrieve(url, filename)
+        urllib.request.urlretrieve(url, filename)
         doc = open(filename, "rb")
         from_chat_id = -1001302729558
         bot.send_document(from_chat_id, doc, caption="сюда запишу кол-во страниц")
