@@ -1,8 +1,8 @@
-import os
+#import os
 from flask import Flask, request
 import telebot
 import urllib.request as urllib2
-TOKEN = "696434286:AAGtH9kExLEAiX4m1eUl2CyM1MBkUmcqWco"
+TOKEN = "617079598:AAGfLSs8LmTNRw8m0CBQI6vIKYHU14FJ8uQ"
 #TOKEN = os.environ.get('TOKEN')
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
@@ -79,8 +79,8 @@ def callback_inline(call):
                 format_file = call.data
                 format_doc = User(format_file)
                 user_dict[chat_id] = format_doc
-        msg = bot.send_message(call.from_user.id, 'Супер! Теперь можете написать примечания к заказу..')
-        bot.register_next_step_handler(msg, get_app)
+            msg = bot.send_message(call.from_user.id, 'Супер! Теперь можете написать примечания к заказу..')
+            bot.register_next_step_handler(msg, get_app)
 
 def get_app(message): #Ловим примечания
     chat_id = message.chat.id
