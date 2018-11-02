@@ -3,7 +3,7 @@ import os
 from telebot import types
 import urllib.request as urllib2
 from flask import Flask, request
-bot = telebot.Telebot('617079598:AAGfLSs8LmTNRw8m0CBQI6vIKYHU14FJ8uQ')
+bot = telebot.Telebot('')
 server = Flask(__name__)
 
 
