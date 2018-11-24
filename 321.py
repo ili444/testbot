@@ -125,14 +125,18 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
-            file_id = message.document.file_id
-            user.file_id = file_id
-            file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-            user.link = link
-            file_name = message.document.file_name
-            user.file_name = file_name
-            bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=inline_markup())
+            if user.type_print == None:
+                file_id = message.document.file_id
+                user.file_id = file_id
+                file_info = bot.get_file(file_id)
+                link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
+                user.link = link
+                file_name = message.document.file_name
+                user.file_name = file_name
+                bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=inline_markup())
+            else:
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                  text='Хорошо, выберите кол-во копий:', reply_markup=markup)
         if 'https' in message.text:
             url = message.text
             result = urllib.request.urlopen(url)
