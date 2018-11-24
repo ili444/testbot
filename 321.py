@@ -19,7 +19,7 @@ from bs4 import BeautifulSoup
 from flask import Flask, request
 
 token = '617079598:AAGfLSs8LmTNRw8m0CBQI6vIKYHU14FJ8uQ'
-bot = telebot.Telebot(token)
+bot = telebot.TeleBot(token)
 server = Flask(__name__)
 
 user_dict = {}
