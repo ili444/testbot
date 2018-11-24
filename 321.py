@@ -10,7 +10,6 @@ from datetime import datetime
 import urllib
 import urllib.request as urllib2
 import os
-import pythoncom
 from urllib.parse import urlparse
 from PyPDF2 import PdfFileReader
 import os.path
