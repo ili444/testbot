@@ -17,14 +17,12 @@ from docx import Document
 import zipfile
 from bs4 import BeautifulSoup
 from flask import Flask, request
-bot = telebot.Telebot('')
-server = Flask(__name__)
 
 token = '617079598:AAGfLSs8LmTNRw8m0CBQI6vIKYHU14FJ8uQ'
-bot = telebot.TeleBot(token)
+bot = telebot.Telebot(token)
+server = Flask(__name__)
+
 user_dict = {}
-
-
 
 class User:
     def __init__(self, start):
