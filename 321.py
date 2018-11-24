@@ -141,8 +141,7 @@ def msg_hand(message):
             user.link = url
             bot.send_message(message.chat.id, 'Выберите услугу:', reply_markup=inline_markup())
         if message.text == 'Главное меню':
-            msg = bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
-            bot.register_next_step_handler(msg, get_app)
+            bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
             with shelve.open('itog') as db:
                 lst3 = list(db.keys())
@@ -163,64 +162,10 @@ def msg_hand(message):
                         bot.send_message(chat_id, 'Ваша корзина :\n\n'
                                                  f'💾 {m} ₽.\n\n'
                                                    f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
-        #else:
-            #msg = bot.reply_to(message, 'Вы не скинули ни файл ни ссылку на файл. Попробуйте еще раз!')
-            #bot.register_next_step_handler(msg, msg_hand)
+        else:
+            bot.reply_to(message, 'Вы не скинули ни файл ни ссылку на файл. Попробуйте еще раз!')
     except Exception as e:
         print(e)
-
-
-
-def get_app(message):
-    try:
-        chat_id = message.chat.id
-        user = user_dict[chat_id]
-        if message.content_type == 'document':
-            file_id = message.document.file_id
-            user.file_id = file_id
-            file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-            user.link = link
-            file_name = message.document.file_name
-            user.file_name = file_name
-            bot.send_message(message.from_user.id, 'Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
-        if 'https' in message.text:
-            url = message.text
-            result = urllib.request.urlopen(url)
-            file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
-            user.file_name = file_name
-            user.link = url
-            if user.type_print is not None:
-                bot.send_message(chat_id, 'Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
-            else:
-                bot.send_message(message.chat.id, 'Выберите услугу:', reply_markup=inline_markup())
-        if message.text == 'Главное меню':
-            msg = bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
-            bot.register_next_step_handler(msg, get_app)
-        if message.text == 'Корзина':
-            with shelve.open('itog') as db:
-                lst3 = list(db.keys())
-                if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
-                    bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=inline_markup2())
-                else:
-                    with shelve.open('itog') as db:
-                        l = []
-                        s = []
-                        for line3 in db.values():
-                            line2 = ' '.join(line3[:5])
-                            lin = line3[4]
-                            s.append(float(lin))
-                            l.append(line2)
-                        total_price = sum(s)
-                        m = ' ₽\n\n💾 '.join(l)
-                        user.total_price = total_price
-                        bot.send_message(chat_id, 'Ваша корзина :\n\n'
-                                                  f'💾 {m} ₽.\n\n'
-                                                  f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
-    except Exception as e:
-        print(e)
-
-
 
 
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
