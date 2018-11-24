@@ -18,8 +18,8 @@ import zipfile
 from bs4 import BeautifulSoup
 from flask import Flask, request
 from boto.s3.connection import S3Connection
-token = S3Connection(os.environ['token'])
-bot = telebot.TeleBot(token)
+TOKEN = S3Connection(os.environ['token'])
+bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 
 user_dict = {}
@@ -479,7 +479,7 @@ def random_pool():
 
 
 
-@server.route('/' + token, methods=['POST'])
+@server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
@@ -488,7 +488,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://flask-est-1996.herokuapp.com/' + token)
+    bot.set_webhook(url='https://flask-est-1996.herokuapp.com/' + TOKEN)
     return "!", 200
 
 
