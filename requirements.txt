@@ -24,3 +24,10 @@ virtualenv-clone==0.3.0
 Werkzeug==0.14.1
 yarl==1.2.6
 requests>=2.20.0
+beautifulsoup4==4.6.3
+bs4==0.0.1
+lxml==4.2.5
+pyPdf==1.13
+PyPDF2==1.26.0
+python-docx==0.8.7
+urllib3==1.23
