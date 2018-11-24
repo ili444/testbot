@@ -492,10 +492,7 @@ def random_pool():
 
 
 
-
-
-
-@server.route('/' + TOKEN, methods=['POST'])
+@server.route('/' + token, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
@@ -504,7 +501,7 @@ def getMessage():
 @server.route("/")
 def webhook():
     bot.remove_webhook()
-    bot.set_webhook(url='https://flask-est-1996.herokuapp.com/' + TOKEN)
+    bot.set_webhook(url='https://flask-est-1996.herokuapp.com/' + token)
     return "!", 200
 
 
