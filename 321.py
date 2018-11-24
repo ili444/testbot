@@ -291,19 +291,6 @@ def callback_query_handler(callback):
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
                 user.num_page = int(num_page)
-                print(num_page)
-            
-            if 'doc' in file_name:
-                document = Document(file_name)
-                document.save(f'fffff.docx')
-                document = Document(f'ffff.docx')
-                document.save(f'{file_name}.zip')
-                zf = zipfile.ZipFile(f'{file_name}.zip')
-                f = zf.open('docProps/app.xml').read()
-                soup = BeautifulSoup(f, 'xml')
-                num_page = soup.find('Pages').next_element
-                user.num_page = int(num_page)
-                print(num_page) 
             if 'pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
