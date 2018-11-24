@@ -128,7 +128,7 @@ def msg_hand(message):
             file_id = message.document.file_id
             user.file_id = file_id
             file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{token}/{file_info.file_path}'
+            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
             user.link = link
             file_name = message.document.file_name
             user.file_name = file_name
@@ -179,7 +179,7 @@ def get_app(message):
             file_id = message.document.file_id
             user.file_id = file_id
             file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{token}/{file_info.file_path}'
+            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
             user.link = link
             file_name = message.document.file_name
             user.file_name = file_name
