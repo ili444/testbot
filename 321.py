@@ -17,6 +17,7 @@ from docx import Document
 import zipfile
 from bs4 import BeautifulSoup
 from flask import Flask, request
+import boto
 from boto.s3.connection import S3Connection
 TOKEN = S3Connection(os.environ['token'])
 bot = telebot.TeleBot(TOKEN)
