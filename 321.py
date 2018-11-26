@@ -259,6 +259,7 @@ def callback_query_handler(callback):
                 filename = os.path.abspath('1111.pptx')
                 num_page = len(Presentation(filename).slides)
                 user.num_page = num_page
+                gg_basket(callback)
             if '.xlsx' in file_name:
                 xl = pd.ExcelFile(os.path.abspath(file_name))
                 num_page = len(xl.sheet_names)
