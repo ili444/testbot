@@ -289,9 +289,13 @@ def callback_query_handler(callback):
                 for line3 in db.values():
                     line2 = ' '.join(line3[:5])
                     lin = line3[4]
-                    s.append(float(lin))
+                    if lin == '?':   
+                        s.append(lin)
+                        total_price == '?'
+                    else:
+                        s.append(float(lin))
+                        total_price = sum(s)
                     l.append(line2)
-                total_price = sum(s)
                 m = ' ₽\n\n💾 '.join(l)
                 user.total_price = total_price
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
