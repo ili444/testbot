@@ -13,6 +13,7 @@ import os
 from urllib.parse import urlparse
 from PyPDF2 import PdfFileReader
 import os.path
+import pandas as pd
 from docx import Document
 import zipfile
 from bs4 import BeautifulSoup
@@ -252,12 +253,8 @@ def callback_query_handler(callback):
                 user.num_page = num_page
                 gg_basket(callback)             
             if '.xlsx' in file_name:
-                document = Document(file_name)
-                document.save(f'{file_name}.zip')
-                zf = zipfile.ZipFile(f'{file_name}.zip')
-                f = zf.open('docProps/app.xml').read()
-                soup = BeautifulSoup(f, 'xml')
-                num_page = soup.find('vt:i4').next_element
+                xl = pd.ExcelFile(path + filename)
+                num_page = len(xl.sheet_names)
                 user.num_page = int(num_page)
                 gg_basket(callback)
             if '.pptx' in file_name:
