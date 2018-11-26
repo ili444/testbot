@@ -253,10 +253,11 @@ def callback_query_handler(callback):
                 user.num_page = num_page
                 gg_basket(callback)             
             if '.xlsx' in file_name:
-                xl = pd.ExcelFile(path + filename)
+                xl = pd.ExcelFile(os.path.abspath(filename))
                 num_page = len(xl.sheet_names)
                 user.num_page = int(num_page)
                 gg_basket(callback)
+            """
             if '.pptx' in file_name:
                 document = Document(file_name)
                 document.save(f'{file_name}.zip')
@@ -266,6 +267,7 @@ def callback_query_handler(callback):
                 num_page = soup.find('Slides').next_element
                 user.num_page = int(num_page)
                 gg_basket(callback)
+            """
             with shelve.open('itog') as db:
                 l = []
                 s = []
