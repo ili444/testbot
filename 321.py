@@ -252,8 +252,8 @@ def callback_query_handler(callback):
                 user.num_page = int(num_page)
                 gg_basket()
             if 'pdf' in file_name:
-                input = PdfFileReader(open(file_name, 'rb'))
-                num_page = input.getNumPages()
+                input1 = PdfFileReader(open(file_name, "rb"))
+                num_page = input1.getNumPages()
                 user.num_page = num_page
                 gg_basket()
             if '.png' or '.jpeg' or '.frw' or '.cdw' in file_name:
