@@ -178,7 +178,9 @@ def gg_basket(callback):
             (str(user.num_page * user.num * user.price_print)),
             ('\n\n' + user.link + '\n\n')]
 
-def gg_jasket():
+def gg_jasket(callback):
+    chat_id = callback.from_user.id
+    user = user_dict[chat_id]
     with shelve.open('itog') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             ('? стр.'),
@@ -252,7 +254,7 @@ def callback_query_handler(callback):
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
                 user.num_page = int(num_page)
-                gg_basket()
+                gg_basket(callback)
             if 'pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
@@ -262,7 +264,7 @@ def callback_query_handler(callback):
                 num_page = 1
                 user.num_page = num_page
             if '.ppt' or '.xls' or '.txt':
-                gg_jasket()             
+                gg_jasket(callback)             
             if '.xlsx' in file_name:
                 document = Document(file_name)
                 document.save(f'{file_name}.zip')
@@ -271,7 +273,7 @@ def callback_query_handler(callback):
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('vt:i4').next_element
                 user.num_page = int(num_page)
-                gg_basket()
+                gg_basket(callback)
             if '.pptx' in file_name:
                 document = Document(file_name)
                 document.save(f'{file_name}.zip')
@@ -280,7 +282,7 @@ def callback_query_handler(callback):
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Slides').next_element
                 user.num_page = int(num_page)
-                gg_basket()
+                gg_basket(callback)
             with shelve.open('itog') as db:
                 l = []
                 s = []
