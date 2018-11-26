@@ -252,13 +252,13 @@ def callback_query_handler(callback):
             if 'pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
-                print(num_page)
                 user.num_page = num_page
                 gg_basket(callback)
             if '.pptx' in file_name:
                 filename = os.path.abspath('1111.pptx')
-                num_page = len(Presentation(filename).slides)
-                user.num_page = num_page
+                np = Presentation(filename)
+                num_page = len(np.slides)
+                user.num_page = int(num_page)
                 gg_basket(callback)
             if '.xlsx' in file_name:
                 xl = pd.ExcelFile(os.path.abspath(file_name))
