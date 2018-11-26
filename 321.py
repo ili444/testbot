@@ -180,7 +180,7 @@ def gg_jasket():
     with shelve.open('itog') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             ('? стр.'),
-            ('?')),
+            ('?'),
             ('\n\n' + user.link + '\n\n')]
 
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
