@@ -13,6 +13,7 @@ import os
 from urllib.parse import urlparse
 from PyPDF2 import PdfFileReader
 import os.path
+import xlrd
 import pandas as pd
 from docx import Document
 import zipfile
