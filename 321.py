@@ -178,15 +178,6 @@ def gg_basket(callback):
             (str(user.num_page * user.num * user.price_print)),
             ('\n\n' + user.link + '\n\n')]
 
-def gg_jasket(callback):
-    chat_id = callback.from_user.id
-    user = user_dict[chat_id]
-    with shelve.open('itog') as db:
-        db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
-            ('? стр.'),
-            ('?'),
-            ('\n\n' + user.link + '\n\n')]
-
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
     if callback.message:
@@ -259,12 +250,7 @@ def callback_query_handler(callback):
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
                 user.num_page = num_page
-                gg_basket(callback)
-            if '.png' or '.jpeg' or '.frw' or '.cdw' in file_name:
-                num_page = 1
-                user.num_page = num_page
-            if '.ppt' or '.xls' or '.txt':
-                gg_jasket(callback)             
+                gg_basket(callback)             
             if '.xlsx' in file_name:
                 document = Document(file_name)
                 document.save(f'{file_name}.zip')
@@ -289,15 +275,9 @@ def callback_query_handler(callback):
                 for line3 in db.values():
                     line2 = ' '.join(line3[:5])
                     lin = line3[4]
-                    if lin == '?':   
-                        s.append(lin)
-                        total_price = '?'
-                        return total_price
-                    else:
-                        s.append(float(lin))
-                        total_price = sum(s)
-                        return total_price
-                    l.append(line2)
+                    s.append(float(lin))
+                total_price = sum(s)
+                l.append(line2)
                 m = ' ₽\n\n💾 '.join(l)
                 user.total_price = total_price
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
