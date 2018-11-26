@@ -252,7 +252,7 @@ def callback_query_handler(callback):
                 user.num_page = int(num_page)
                 gg_basket()
             if 'pdf' in file_name:
-                input = PdfFileReader(open(file_name))
+                input = PdfFileReader(open(file_name, 'rb'))
                 num_page = input.getNumPages()
                 user.num_page = num_page
                 gg_basket()
