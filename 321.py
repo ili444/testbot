@@ -169,7 +169,9 @@ def msg_hand(message):
     except Exception as e:
         print(e)
         
-def gg_basket():
+def gg_basket(callback):
+    chat_id = callback.from_user.id
+    user = user_dict[chat_id]
     with shelve.open('itog') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
@@ -255,7 +257,7 @@ def callback_query_handler(callback):
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
                 user.num_page = num_page
-                gg_basket()
+                gg_basket(callback)
             if '.png' or '.jpeg' or '.frw' or '.cdw' in file_name:
                 num_page = 1
                 user.num_page = num_page
