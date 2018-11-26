@@ -291,10 +291,12 @@ def callback_query_handler(callback):
                     lin = line3[4]
                     if lin == '?':   
                         s.append(lin)
-                        total_price == '?'
+                        total_price = '?'
+                        return total_price
                     else:
                         s.append(float(lin))
                         total_price = sum(s)
+                        return total_price
                     l.append(line2)
                 m = ' ₽\n\n💾 '.join(l)
                 user.total_price = total_price
