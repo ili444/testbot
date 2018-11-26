@@ -17,6 +17,7 @@ import xlrd
 import pandas as pd
 from docx import Document
 import zipfile
+from pptx import Presentation
 from bs4 import BeautifulSoup
 from flask import Flask, request
 TOKEN = os.environ['token']
@@ -253,7 +254,11 @@ def callback_query_handler(callback):
                 num_page = input1.getNumPages()
                 print(num_page)
                 user.num_page = num_page
-                gg_basket(callback)             
+                gg_basket(callback)
+            if '.pptx' in file_name:
+                filename = os.path.abspath('1111.pptx')
+                num_page = len(Presentation(filename).slides)
+                user.num_page = num_page
             if '.xlsx' in file_name:
                 xl = pd.ExcelFile(os.path.abspath(file_name))
                 num_page = len(xl.sheet_names)
