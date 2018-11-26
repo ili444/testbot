@@ -166,11 +166,22 @@ def msg_hand(message):
                         bot.send_message(chat_id, 'Ваша корзина :\n\n'
                                                  f'💾 {m} ₽.\n\n'
                                                    f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
-        else:
-            bot.reply_to(message, 'Вы не скинули ни файл ни ссылку на файл. Попробуйте еще раз!')
     except Exception as e:
         print(e)
+        
+def gg_basket():
+    with shelve.open('itog') as db:
+        db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
+            (str(user.num_page) + ' стр.'),
+            (str(user.num_page * user.num * user.price_print)),
+            ('\n\n' + user.link + '\n\n')]
 
+def gg_jasket():
+    with shelve.open('itog') as db:
+        db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
+            ('? стр.'),
+            ('?')),
+            ('\n\n' + user.link + '\n\n')]
 
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
@@ -239,15 +250,35 @@ def callback_query_handler(callback):
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
                 user.num_page = int(num_page)
+                gg_basket()
             if 'pdf' in file_name:
-                input1 = PdfFileReader(open(file_name, "rb"))
-                num_page = input1.getNumPages()
+                input = PdfFileReader(open(file_name))
+                num_page = input.getNumPages()
                 user.num_page = num_page
-            with shelve.open('itog') as db:
-                db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
-                                                           (str(user.num_page) + ' стр.'),
-                                                           (str(user.num_page * user.num * user.price_print)),
-                                                           ('\n\n' + user.link + '\n\n')]
+                gg_basket()
+            if '.png' or '.jpeg' or '.frw' or '.cdw' in file_name:
+                num_page = 1
+                user.num_page = num_page
+            if '.ppt' or '.xls' or '.txt':
+                gg_jasket()             
+            if '.xlsx' in file_name:
+                document = Document(file_name)
+                document.save(f'{file_name}.zip')
+                zf = zipfile.ZipFile(f'{file_name}.zip')
+                f = zf.open('docProps/app.xml').read()
+                soup = BeautifulSoup(f, 'xml')
+                num_page = soup.find('vt:i4').next_element
+                user.num_page = int(num_page)
+                gg_basket()
+            if '.pptx' in file_name:
+                document = Document(file_name)
+                document.save(f'{file_name}.zip')
+                zf = zipfile.ZipFile(f'{file_name}.zip')
+                f = zf.open('docProps/app.xml').read()
+                soup = BeautifulSoup(f, 'xml')
+                num_page = soup.find('Slides').next_element
+                user.num_page = int(num_page)
+                gg_basket()
             with shelve.open('itog') as db:
                 l = []
                 s = []
