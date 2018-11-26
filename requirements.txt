@@ -34,3 +34,5 @@ python-docx==0.8.7
 urllib3==1.23
 boto==2.49.0
 xlrd==1.1.0
+python-pptx==0.6.16
+XlsxWriter==1.1.2
