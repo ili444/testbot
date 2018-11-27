@@ -108,7 +108,8 @@ def handle_start(message):
     name = message.from_user.first_name
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!', reply_markup=user_markup1)
-                                      
+
+  
                                       
 @bot.message_handler(content_types=['text', 'document'])
 def msg_hand(message):
@@ -130,10 +131,10 @@ def msg_hand(message):
                 user.file_name = file_name
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id, 'Такие старые форматы - не смогу определить их'
-                                     'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n'
+                                     'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
                 else:
-                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
@@ -145,13 +146,13 @@ def msg_hand(message):
                 file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
                 user.file_name = file_name
                 user.link = url
-                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
         if message.text == 'Главное меню':
-            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                              '\n\nВыберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
@@ -190,7 +191,11 @@ def gg_basket(callback):
             (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
             ('\n\n' + user.link + '\n\n')]
-        
+ 
+def callduty(price_print, callback):
+    type_print = callback.data
+    user.price_print = price_print
+    user.type_print = type_print
         
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
@@ -199,24 +204,18 @@ def callback_query_handler(callback):
         user = user_dict[chat_id]
         num = user.num
         if callback.data == '1Печать фото 10х15':
-            type_print = callback.data
-            user.type_print = type_print
             price_print = 10.0
-            user.price_print = price_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
         if callback.data == '1Цветная печать А4':
-            type_print = callback.data
-            user.type_print = type_print
             price_print = 20.0
-            user.price_print = price_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
         if callback.data == '1Ч/Б Печать(распечатка)':
             price_print = 2.5
-            type_print = callback.data
-            user.price_print = price_print
-            user.type_print = type_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
         if callback.data == '+1':
@@ -326,25 +325,19 @@ def callback_query_handler(callback):
             markup.add(a4, a5)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text='Хорошо, выберите кол-во копий:', reply_markup=markup)
-        if callback.data == 'Ч/Б Печать(распечатка)':
+        if callback.data == 'Ч/Б Печать(распечатка)':  
             price_print = 2.5
-            type_print = callback.data
-            user.price_print = price_print
-            user.type_print = type_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                   text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
         if callback.data == 'Печать фото 10х15':
             price_print = 10.0
-            user.price_print = price_print
-            type_print = callback.data
-            user.type_print = type_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                   text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
         if callback.data == 'Цветная печать А4':
             price_print = 20.0
-            user.price_print = price_print
-            type_print = callback.data
-            user.type_print = type_print
+            callduty(price_print, callback)
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                   text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
 
@@ -417,13 +410,13 @@ def callback_query_handler(callback):
 def shipping(shipping_query):
     print(shipping_query)
     bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=False,
-                              error_message='Oh, seems like our Dog couriers are having a lunch right now. Try again later!')
+                              error_message='Oh, што-то пошло не так. Попробуйте повторить позже!')
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def checkout(pre_checkout_query):
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
-                                  error_message="Aliens tried to steal your card's CVV, but we successfully protected your credentials,"
-                                                " try to pay again in a few minutes, we need a small rest.")
+                                  error_message="Проблемы с картой"
+                                                " повторите платеж позже.")
 
 
 @bot.message_handler(content_types=['successful_payment'])
