@@ -120,7 +120,6 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
-            print(user.type_print)
             if user.type_print == None:
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -129,22 +128,32 @@ def msg_hand(message):
                 user.link = link
                 file_name = message.document.file_name
                 user.file_name = file_name
-                bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=inline_markup())
+                if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
+                    bot.send_message(message.from_user.id, 'Такие старые форматы - не смогу определить их'
+                                     'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n'
+                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
+                else:
+                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                     '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
-                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
+                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
         if 'https' in message.text:
-            print(user.type_print)
             if user.type_print == None:
                 url = message.text
                 result = urllib.request.urlopen(url)
                 file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
                 user.file_name = file_name
                 user.link = url
-                bot.send_message(message.chat.id, 'Выберите услугу:', reply_markup=inline_markup())
+                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                 '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
-                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
+                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
         if message.text == 'Главное меню':
-            bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
+            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n'
+                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                             '\n\nВыберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
             with shelve.open('itog') as db:
                 lst3 = list(db.keys())
@@ -170,8 +179,6 @@ def msg_hand(message):
                     bot.send_message(chat_id, 'Ваша корзина :\n\n'
                                                  f'💾 {m} ₽.\n\n'
                                                    f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
-                    
-                        
     except Exception as e:
         print(e)
         
@@ -257,13 +264,15 @@ def callback_query_handler(callback):
             if '.pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
-                user.num_page = num_page
+                user.num_page = int(num_page)
+                gg_basket(callback)
+            if '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg':
+                user.num_page = 1
                 gg_basket(callback)
             if '.pptx' in file_name:
                 filename = os.path.abspath('1111.pptx')
                 np = Presentation(filename)
                 num_page = len(np.slides)
-                print(num_page)
                 user.num_page = int(num_page)
                 gg_basket(callback)
             if '.xlsx' in file_name:
