@@ -194,6 +194,16 @@ def callback_query_handler(callback):
         chat_id = callback.from_user.id
         user = user_dict[chat_id]
         num = user.num
+        def markupp():
+            markup = types.InlineKeyboardMarkup()
+            a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
+            a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
+            a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
+            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
+            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+            markup.add(a1, a2, a3)
+            markup.add(a4, a5)
+            return markupp
         if callback.data == '1Печать фото 10х15':
             type_print = callback.data
             user.type_print = type_print
@@ -311,37 +321,29 @@ def callback_query_handler(callback):
             bot.send_message(callback.from_user.id,
                                    "Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
         if callback.data == 'назад':
-            markup = types.InlineKeyboardMarkup()
-            a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-            a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-            a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
-            markup.add(a1, a2, a3)
-            markup.add(a4, a5)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий:', reply_markup=markup)
+                                  text='Хорошо, выберите кол-во копий:', reply_markup=markupp())
         if callback.data == 'Ч/Б Печать(распечатка)':
             price_print = 2.5
             type_print = callback.data
             user.price_print = price_print
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
+                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp())
         if callback.data == 'Печать фото 10х15':
             price_print = 10.0
             user.price_print = price_print
             type_print = callback.data
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
+                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp())
         if callback.data == 'Цветная печать А4':
             price_print = 20.0
             user.price_print = price_print
             type_print = callback.data
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
+                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp())
 
         if callback.data == "later":
             number = str(random_pool())
