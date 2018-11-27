@@ -171,9 +171,9 @@ def msg_hand(message):
                     total_price = sum(s)
                     m = ' ₽\n\n💾 '.join(l)
                     user.total_price = total_price
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
-                                                           f'💾 {m} ₽.\n\n'
-                                                           f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
+                    bot.send_message(chat_id, 'Ваша корзина :\n\n'
+                                                 f'💾 {m} ₽.\n\n'
+                                                   f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
                     
                         
     except Exception as e:
