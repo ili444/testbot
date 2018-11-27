@@ -120,7 +120,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
-            print(user.print_type)
+            print(user.type_print)
             if user.type_print == None:
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -133,7 +133,7 @@ def msg_hand(message):
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
         if 'https' in message.text:
-            print(user.print_type)
+            print(user.type_print)
             if user.type_print == None:
                 url = message.text
                 result = urllib.request.urlopen(url)
