@@ -249,6 +249,7 @@ def callback_query_handler(callback):
             urllib2.urlretrieve(url, file_name)
             if 'docx' in file_name:
                 document = Document(file_name)
+                document.save(file_name)
                 document.save(f'{file_name}.zip')
                 zf = zipfile.ZipFile(f'{file_name}.zip')
                 f = zf.open('docProps/app.xml').read()
