@@ -120,6 +120,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
+            print(user.print_type)
             if user.type_print == None:
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -130,14 +131,18 @@ def msg_hand(message):
                 user.file_name = file_name
                 bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=inline_markup())
             else:
-                bot.edit_message_text(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
+                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
         if 'https' in message.text:
-            url = message.text
-            result = urllib.request.urlopen(url)
-            file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
-            user.file_name = file_name
-            user.link = url
-            bot.send_message(message.chat.id, 'Выберите услугу:', reply_markup=inline_markup())
+            print(user.print_type)
+            if user.type_print == None:
+                url = message.text
+                result = urllib.request.urlopen(url)
+                file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
+                user.file_name = file_name
+                user.link = url
+                bot.send_message(message.chat.id, 'Выберите услугу:', reply_markup=inline_markup())
+            else:
+                bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=markup)
         if message.text == 'Главное меню':
             bot.send_message(message.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
@@ -247,17 +252,8 @@ def callback_query_handler(callback):
                 f = zf.open('docProps/app.xml').read()
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
-                if int(num_page) != 1:
-                    print(num_page)
-                    user.num_page = int(num_page)
-                else:
-                    document = Document(file_name)
-                    document.save(f'{file_name}1.pdf')
-                    input1 = PdfFileReader(open(f'{file_name}1.pdf', "rb"))
-                    num_page = input1.getNumPages()
-                    user.num_page = num_page
-                gg_basket(callback)
-                
+                user.num_page = int(num_page)
+                gg_basket(callback) 
             if '.pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
