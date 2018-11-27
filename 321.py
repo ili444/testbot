@@ -68,14 +68,6 @@ def clear_basket():
     return clear_basket()
 
 
-def gen_markup():
-    markup = types.InlineKeyboardMarkup()
-    markup.row_width = 2
-    markup.add(types.InlineKeyboardButton(".pdf", callback_data=u'pdf'),
-               types.InlineKeyboardButton(".doc", callback_data=u'doc'))
-    return markup
-
-
 def num_copy_markup1():
     markup = types.InlineKeyboardMarkup()
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
@@ -128,7 +120,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
-            if user.type_print == None:
+            if user.type_print is not None:
                 file_id = message.document.file_id
                 user.file_id = file_id
                 file_info = bot.get_file(file_id)
@@ -187,20 +179,6 @@ def gg_basket(callback):
             (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
             ('\n\n' + user.link + '\n\n')]
-
-def markupp(chat_id):
-    chat_id = callback.from_user.id
-    user = user_dict[chat_id]
-    markup = types.InlineKeyboardMarkup()
-    a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-    a2 = types.InlineKeyboardButton(str(user.num), callback_data='jr')
-    a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-    a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-    a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
-    markup.add(a1, a2, a3)
-    markup.add(a4, a5)
-    user.num = num
-    return markupp
         
         
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
@@ -270,9 +248,17 @@ def callback_query_handler(callback):
                 f = zf.open('docProps/app.xml').read()
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
-                print(num_page)
-                user.num_page = int(num_page)
+                if int(num_page) != 1:
+                    print(num_page)
+                    user.num_page = int(num_page)
+                else:
+                    document = Document(file_name)
+                    document.save(f'{file_name}1.pdf')
+                    input1 = PdfFileReader(open(f'{file_name}1.pdf', "rb"))
+                    num_page = input1.getNumPages()
+                    user.num_page = num_page
                 gg_basket(callback)
+                
             if '.pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
@@ -326,29 +312,37 @@ def callback_query_handler(callback):
             bot.send_message(callback.from_user.id,
                                    "Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
         if callback.data == 'назад':
+            markup = types.InlineKeyboardMarkup()
+            a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
+            a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
+            a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
+            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
+            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+            markup.add(a1, a2, a3)
+            markup.add(a4, a5)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий:', reply_markup=markupp(chat_id))
+                                  text='Хорошо, выберите кол-во копий:', reply_markup=markup)
         if callback.data == 'Ч/Б Печать(распечатка)':
             price_print = 2.5
             type_print = callback.data
             user.price_print = price_print
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp(chat_id))
+                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
         if callback.data == 'Печать фото 10х15':
             price_print = 10.0
             user.price_print = price_print
             type_print = callback.data
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp(chat_id))
+                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
         if callback.data == 'Цветная печать А4':
             price_print = 20.0
             user.price_print = price_print
             type_print = callback.data
             user.type_print = type_print
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Хорошо, выберите кол-во копий', reply_markup=markupp(chat_id))
+                                  text='Хорошо, выберите кол-во копий', reply_markup=num_copy_markup1())
 
         if callback.data == "later":
             number = str(random_pool())
