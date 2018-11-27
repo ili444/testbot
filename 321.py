@@ -193,6 +193,8 @@ def gg_basket(callback):
             ('\n\n' + user.link + '\n\n')]
  
 def callduty(price_print, callback):
+    chat_id = callback.from_user.id
+    user = user_dict[chat_id]
     type_print = callback.data
     user.price_print = price_print
     user.type_print = type_print
