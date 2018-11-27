@@ -266,21 +266,16 @@ def callback_query_handler(callback):
                 num_page = len(xl.sheet_names)
                 user.num_page = int(num_page)
                 gg_basket(callback)
-            """
-            if '.pptx' in file_name:
-                document = Document(file_name)
-                document.save(f'{file_name}.zip')
-                zf = zipfile.ZipFile(f'{file_name}.zip')
-                f = zf.open('docProps/app.xml').read()
-                soup = BeautifulSoup(f, 'xml')
-                num_page = soup.find('Slides').next_element
-                user.num_page = int(num_page)
-                gg_basket(callback)
-            """
             with shelve.open('itog') as db:
                 l = []
                 s = []
-                for line3 in db.values():
+                r = []
+                lst3 = list(db.keys())
+                lst = list((filter(lambda x: str(chat_id) in x, lst3)))
+                for dd in lst:
+                    a = db.get(dd)
+                    r.append(a)
+                for line3 in r:
                     line2 = ' '.join(line3[:5])
                     lin = line3[4]
                     s.append(float(lin))
