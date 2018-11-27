@@ -193,7 +193,7 @@ def markupp(callback):
     user = user_dict[chat_id]
     markup = types.InlineKeyboardMarkup()
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-    a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
+    a2 = types.InlineKeyboardButton(str(user.num), callback_data='jr')
     a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
     a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
     a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
