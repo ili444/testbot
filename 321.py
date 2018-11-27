@@ -158,7 +158,13 @@ def msg_hand(message):
                     with shelve.open('itog') as db:
                         l = []
                         s = []
-                        for line3 in db.values():
+                        r = []
+                        lst3 = list(db.keys())
+                        lst = list((filter(lambda x: str(chat_id) in x, lst3)))
+                        for dd in lst:
+                            a = db.get(dd)
+                            r.append(a)
+                        for line3 in r:
                             line2 = ' '.join(line3[:5])
                             lin = line3[4]
                             s.append(float(lin))
@@ -166,9 +172,9 @@ def msg_hand(message):
                         total_price = sum(s)
                         m = ' ₽\n\n💾 '.join(l)
                         user.total_price = total_price
-                        bot.send_message(chat_id, 'Ваша корзина :\n\n'
-                                                 f'💾 {m} ₽.\n\n'
-                                                   f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
+                                                           f'💾 {m} ₽.\n\n'
+                                                           f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
     except Exception as e:
         print(e)
         
