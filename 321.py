@@ -152,7 +152,7 @@ def msg_hand(message):
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
         if message.text == 'Главное меню':
-            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+            bot.send_message(message.chat.id, '1Поддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                              '\n\nВыберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
