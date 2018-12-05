@@ -156,7 +156,7 @@ def msg_hand(message):
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                              '\n\nВыберите услугу:', reply_markup=main_menu())
         if message.text == 'Корзина':
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
                 if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
                     bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=inline_markup2())
@@ -186,7 +186,7 @@ def msg_hand(message):
 def gg_basket(callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
-    with shelve.open('itog') as db:
+    with shelve.open('itog.py') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
@@ -281,7 +281,7 @@ def callback_query_handler(callback):
                 num_page = len(xl.sheet_names)
                 user.num_page = int(num_page)
                 gg_basket(callback)
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 l = []
                 s = []
                 r = []
@@ -305,7 +305,7 @@ def callback_query_handler(callback):
         if callback.data == 'оформить':
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите тип оплаты ..', reply_markup=gen_markup1())
         if callback.data == 'очистить':
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
                 lst = list((filter(lambda x: str(chat_id) in x, lst3)))
                 for dd in lst:
@@ -351,7 +351,7 @@ def callback_query_handler(callback):
             bot.send_message(callback.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
         
 
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 l = []
                 for line3 in db.values():
                     line2 = ' '.join(line3)
@@ -372,7 +372,7 @@ def callback_query_handler(callback):
                                            f'Тип оплаты: {type_pay}\n\n'
                                            f'Итого: {str(user.total_price)} руб.'
                              )
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
                 lst = list((filter(lambda x: str(chat_id) in x, lst3)))
                 for dd in lst:
@@ -427,7 +427,7 @@ def got_payment(message):
     user = user_dict[chat_id]
     number = str(random_pool())
     bot.send_message(message.from_user.id, 'Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
-    with shelve.open('itog') as db:
+    with shelve.open('itog.py') as db:
         l = []
         for line3 in db.values():
             line2 = ' '.join(line3)
