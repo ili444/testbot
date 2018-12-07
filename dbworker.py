@@ -6,7 +6,7 @@ import shelve
 def get_current_state(user_id):
     with shelve.open('db_file.py') as db:
         try:
-            return db[user_id]
+            return db[user_id].decode()
         except KeyError:  # Если такого ключа почему-то не оказалось
             return config.States.S_START.value  # значение по умолчанию - начало диалога
 
