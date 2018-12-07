@@ -125,6 +125,7 @@ def msg_hand(message):
         user.num = num
         if message.content_type == 'document':
             print(config.States.S_wait.value)
+            print(dbworker.get_current_state(message.chat.id))
             if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
                 file_id = message.document.file_id
                 user.file_id = file_id
