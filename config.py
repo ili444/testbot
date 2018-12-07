@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
-
+import os
 TOKEN = os.environ['token']
 
 
