@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 #coding: utf-8
+import config
+import dbworker
 import telebot
 from telebot.types import LabeledPrice
 from telebot import types
@@ -107,10 +109,11 @@ def handle_start(message):
     user_markup1.row('Канцелярия', 'Обратная связь')
     name = message.from_user.first_name
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
-                                      f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!', reply_markup=user_markup1)
-  
-  
-                                      
+                                      f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
+                     reply_markup=user_markup1)
+    dbworker.set_state(message.chat.id, config.States.S_wait.value)
+
+
 @bot.message_handler(content_types=['text', 'document'])
 def msg_hand(message):
     try:
@@ -121,7 +124,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
-            if user.type_print == None:
+            if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
                 file_id = message.document.file_id
                 user.file_id = file_id
                 file_info = bot.get_file(file_id)
@@ -131,33 +134,32 @@ def msg_hand(message):
                 user.file_name = file_name
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id, 'Такие старые форматы - не смогу определить их'
-                                     'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
-                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
+                                                           'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
+                                                           'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
-                                     '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
-            
         if 'https' in message.text:
-            if user.type_print == None:
+            if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
                 url = message.text
                 result = urllib.request.urlopen(url)
                 file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
                 user.file_name = file_name
                 user.link = url
                 bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
-                                 '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                                  'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
-          
+
         if message.text == 'Главное меню':
-            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                     'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
-                             '\n\nВыберите услугу:', reply_markup=main_menu())
-            
+            bot.send_message(message.chat.id, '1Поддерживаю форматы:\n\n'
+                                              'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                              '\n\nВыберите услугу:', reply_markup=main_menu())
+            dbworker.set_state(message.chat.id, config.States.S_wait.value)
         if message.text == 'Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
@@ -181,10 +183,11 @@ def msg_hand(message):
                     m = ' ₽\n\n💾 '.join(l)
                     user.total_price = total_price
                     bot.send_message(chat_id, 'Ваша корзина :\n\n'
-                                                 f'💾 {m} ₽.\n\n'
-                                                   f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
+                                              f'💾 {m} ₽.\n\n'
+                                              f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
     except Exception as e:
         print(e)
+
         
 def gg_basket(callback):
     chat_id = callback.from_user.id
@@ -213,16 +216,19 @@ def callback_query_handler(callback):
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+            dbworker.set_state(chat_id, config.States.S_type_print.value)
         if callback.data == '1Цветная печать А4':
             price_print = 20.0
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+            dbworker.set_state(chat_id, config.States.S_type_print.value)
         if callback.data == '1Ч/Б Печать(распечатка)':
             price_print = 2.5
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+            dbworker.set_state(chat_id, config.States.S_type_print.value)
         if callback.data == '+1':
             num += 1
             markup = types.InlineKeyboardMarkup()
