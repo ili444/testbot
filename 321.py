@@ -108,7 +108,7 @@ def handle_start(message):
     name = message.from_user.first_name
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!', reply_markup=user_markup1)
-
+  
   
                                       
 @bot.message_handler(content_types=['text', 'document'])
@@ -139,6 +139,7 @@ def msg_hand(message):
                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
+            
         if 'https' in message.text:
             if user.type_print == None:
                 url = message.text
@@ -151,10 +152,12 @@ def msg_hand(message):
                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
+          
         if message.text == 'Главное меню':
-            bot.send_message(message.chat.id, '1Поддерживаю форматы:\n\n'
+            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                              '\n\nВыберите услугу:', reply_markup=main_menu())
+            
         if message.text == 'Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
