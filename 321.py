@@ -124,6 +124,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'document':
+            print(config.States.S_wait.value)
             if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -160,6 +161,7 @@ def msg_hand(message):
                                               'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                               '\n\nВыберите услугу:', reply_markup=main_menu())
             dbworker.set_state(message.chat.id, config.States.S_wait.value)
+            print(config.States.S_wait.value)
         if message.text == 'Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
