@@ -2,7 +2,7 @@
 from enum import Enum
 
 TOKEN = os.environ['token']
-db_file = "database.vdb"
+
 
 
 class States(Enum):
