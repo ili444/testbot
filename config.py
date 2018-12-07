@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from enum import Enum
 
-token = '696434286:AAGtH9kExLEAiX4m1eUl2CyM1MBkUmcqWco'
+TOKEN = os.environ['token']
 db_file = "database.vdb"
 
 
