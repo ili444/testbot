@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 #coding: utf-8
-import config
 import dbworker
 import telebot
 from telebot.types import LabeledPrice
@@ -111,7 +110,7 @@ def handle_start(message):
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
-    dbworker.set_state(message.chat.id, config.States.S_wait.value)
+    dbworker.set_state(message.chat.id, '1')
 
 
 @bot.message_handler(content_types=['text', 'document'])
@@ -126,7 +125,7 @@ def msg_hand(message):
         if message.content_type == 'document':
             print(str(config.States.S_wait.value))
             print(dbworker.get_current_state(message.chat.id))
-            if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
+            if dbworker.get_current_state(message.chat.id) == '1':
                 file_id = message.document.file_id
                 user.file_id = file_id
                 file_info = bot.get_file(file_id)
@@ -145,7 +144,7 @@ def msg_hand(message):
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
         if 'https' in message.text:
-            if dbworker.get_current_state(message.chat.id) == config.States.S_wait.value:
+            if dbworker.get_current_state(message.chat.id) == '1':
                 url = message.text
                 result = urllib.request.urlopen(url)
                 file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
@@ -219,19 +218,19 @@ def callback_query_handler(callback):
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
-            dbworker.set_state(chat_id, config.States.S_type_print.value)
+            dbworker.set_state(chat_id, '2')
         if callback.data == '1Цветная печать А4':
             price_print = 20.0
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
-            dbworker.set_state(chat_id, config.States.S_type_print.value)
+            dbworker.set_state(chat_id, '2')
         if callback.data == '1Ч/Б Печать(распечатка)':
             price_print = 2.5
             callduty(price_print, callback)
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                   text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
-            dbworker.set_state(chat_id, config.States.S_type_print.value)
+            dbworker.set_state(chat_id, '2')
         if callback.data == '+1':
             num += 1
             markup = types.InlineKeyboardMarkup()
