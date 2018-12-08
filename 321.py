@@ -160,7 +160,7 @@ def msg_hand(message):
                                               '\n\nВыберите услугу:', reply_markup=main_menu())
             dbworker.set_state(str(chat_id), '1')
         if message.text == 'Корзина':
-            with shelve.open('itog') as db:
+            with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
                 if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
                     bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=inline_markup2())
