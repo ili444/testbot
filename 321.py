@@ -141,6 +141,7 @@ def msg_hand(message):
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
+                dbworker.set_state(str(chat_id), '1')
         if 'https' in message.text:
             if dbworker.get_current_state(str(chat_id)) == '1':
                 url = message.text
@@ -153,7 +154,7 @@ def msg_hand(message):
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.send_message(chat_id, text='Хорошо, выберите кол-во копий:', reply_markup=num_copy_markup1())
-
+                dbworker.set_state(str(chat_id), '1')
         if message.text == 'Главное меню':
             bot.send_message(message.chat.id, '1Поддерживаю форматы:\n\n'
                                               'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
