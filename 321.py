@@ -206,6 +206,7 @@ def msg_hand(message):
 def gg_basket(callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
+    print(user.num_page)
     with shelve.open('itog.py') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
