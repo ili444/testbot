@@ -122,6 +122,7 @@ def msg_hand(message):
         else:
             start = 'ok'
             user = User(start)
+            return user
         user_dict[chat_id] = user
         num = 1
         print(str(user))
