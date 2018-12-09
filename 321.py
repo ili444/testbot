@@ -119,14 +119,14 @@ def msg_hand(message):
         chat_id = message.chat.id
         user = user_dict[chat_id]
         if user.start == 'ok':
-            pass
+            print('1')
         else:
+            print('2')
             start = 'ok'
             user = User(start)
             user_dict[chat_id] = user
             return user
         num = 1
-        print(str(user))
         user.num = num
         if message.content_type == 'document':
             if dbworker.get_current_state(str(chat_id)) == '1':
