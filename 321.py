@@ -269,6 +269,7 @@ def callback_query_handler(callback):
                 f = zf.open('docProps/app.xml').read()
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
+                print(num_page)
                 user.num_page = int(num_page)
                 gg_basket(callback) 
             if '.pdf' in file_name:
