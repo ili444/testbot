@@ -75,6 +75,17 @@ def num_copy_markup1():
     markup.add(a6)
     return markup
 
+def num_copy_markup2():
+    markup = types.InlineKeyboardMarkup()
+    a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
+    a2 = types.InlineKeyboardButton('1', callback_data='jr')
+    a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
+    a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
+    a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+    markup.add(a1, a2, a3)
+    markup.add(a4, a5)
+    return markup
+
 def gen_markup1():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
@@ -83,8 +94,12 @@ def gen_markup1():
                types.InlineKeyboardButton("Назад", callback_data='корзина'))
     return markup
 
-
-
+def go_basket():
+    markup = types.InlineKeyboardMarkup(True)
+    markup.add(types.InlineKeyboardButton("Перейти в корзину", callback_data='корзина'),
+               types.InlineKeyboardButton("Изменить примечание ", callback_data='примечания'),
+               types.InlineKeyboardButton("Изменить кол-во экземпляров", callback_data='назад')
+               
 def gen_markup2():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
@@ -99,14 +114,23 @@ def gen_markup2():
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     user_markup1 = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup1.row('Главное меню', 'Корзина')
+    user_markup1.row('Добавить файл', 'Корзина')
     user_markup1.row('Канцелярия', 'Обратная связь')
     name = message.from_user.first_name
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
-
+@bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == '2')
+def msg_apps(message):
+    chat_id = message.chat.id
+    user = user_dict[chat_id]
+    apps = message.text
+    user.apps = apps
+    bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
+    dbworker.set_state(str(chat_id), '1')
+    
+    
 @bot.message_handler(content_types=['text', 'document'])
 def msg_hand(message):
     print(message)
@@ -284,7 +308,8 @@ def callback_query_handler(callback):
                                                    f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
         if callback.data == 'примечания':
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..',
-                                  reply_markup=num_copy_markup1())
+                                  reply_markup=num_copy_markup2())
+            dbworker.set_state(str(chat_id), '2')
         if callback.data == 'оформить':
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите тип оплаты ..', reply_markup=gen_markup1())
         if callback.data == 'очистить':
