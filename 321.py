@@ -117,10 +117,14 @@ def handle_start(message):
 def msg_hand(message):
     try:
         chat_id = message.chat.id
-        start = 'ok'
-        user = User(start)
+        if user == 'ok':
+            pass
+        else:
+            start = 'ok'
+            user = User(start)
         user_dict[chat_id] = user
         num = 1
+        print(str(user))
         user.num = num
         if message.content_type == 'document':
             if dbworker.get_current_state(str(chat_id)) == '1':
