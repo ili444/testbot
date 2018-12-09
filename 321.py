@@ -117,7 +117,7 @@ def handle_start(message):
 def msg_hand(message):
     try:
         chat_id = message.chat.id
-        user_dict[chat_id] = user
+        user = user_dict[chat_id]
         if user.start == 'ok':
             pass
         else:
@@ -125,7 +125,6 @@ def msg_hand(message):
             user = User(start)
             user_dict[chat_id] = user
             return user
-    
         num = 1
         print(str(user))
         user.num = num
