@@ -119,7 +119,7 @@ def handle_start(message):
     user_markup1.row('Добавить файл', 'Корзина')
     user_markup1.row('Канцелярия', 'Обратная связь')
     name = message.from_user.first_name
-    dbworker.set_state(str(chat_id), '1')
+    dbworker.set_state(str(message.chat.id), '1')
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
