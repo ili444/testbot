@@ -368,6 +368,7 @@ def callback_query_handler(callback):
             with shelve.open('itog.py') as db:
                 l = []
                 r = []
+                lst3 = list(db.keys())
                 lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
                 for dd in lst:
                     a = db.get(dd)
@@ -376,6 +377,7 @@ def callback_query_handler(callback):
                     line2 = ' '.join(line3)
                     l.append(line2)
                 m = '\n'.join(l)
+                print(m)
 
 
             from_chat_id = -1001302729558
@@ -449,6 +451,7 @@ def got_payment(message):
     with shelve.open('itog.py') as db:
         l = []
         r = []
+        lst3 = list(db.keys())
         lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
         for dd in lst:
             a = db.get(dd)
