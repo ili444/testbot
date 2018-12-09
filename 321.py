@@ -210,7 +210,7 @@ def gg_basket(callback):
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
-            ('\n\n' + user.link + '\n\n'), ('Прим.\n' + user.apps + '\n\n')]
+            ('\n\n' + user.link + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
  
 def callduty(price_print, callback):
     chat_id = callback.from_user.id
@@ -311,8 +311,7 @@ def callback_query_handler(callback):
                                                    f'💾 {m} ₽.\n\n'
                                                    f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
         if callback.data == 'примечания':
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..',
-                                  reply_markup=num_copy_markup2())
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..')
             dbworker.set_state(str(chat_id), '2')
         if callback.data == 'оформить':
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите тип оплаты ..', reply_markup=gen_markup1())
@@ -382,7 +381,7 @@ def callback_query_handler(callback):
 
             from_chat_id = -1001302729558
             now = datetime.now()
-            time_order = str(f"{now.year}-{now.month}-{now.day}  {now.hour}:{now.minute}")
+            time_order = str(f"{now.year}-{now.month}-{now.day}  (int(7) + int({now.hour})):{now.minute}")
             type_pay = 'По факту получения'
             name = callback.from_user.first_name + ' ' + callback.from_user.last_name + ' @' + callback.from_user.username
             bot.send_message(from_chat_id, f'{m}'
@@ -462,7 +461,7 @@ def got_payment(message):
         m = '\n'.join(l)
     from_chat_id = -1001302729558
     now = datetime.now()
-    time_order = str(f"{now.year}-{now.month}-{now.day}  {now.hour}:{now.minute}")
+    time_order = str(f"{now.year}-{now.month}-{now.day}  (int(7) + int({now.hour})):{now.minute}")
     type_pay = 'Наличные'
     name = message.from_user.first_name + ' ' + message.from_user.last_name + ' @' + message.from_user.username
     bot.send_message(from_chat_id, f'{m}'
