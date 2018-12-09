@@ -136,7 +136,6 @@ def msg_apps(message):
     
 @bot.message_handler(content_types=['text', 'document'])
 def msg_hand(message):
-    print(message)
     try:
         chat_id = message.chat.id
         start = 'ok'
@@ -219,7 +218,6 @@ def callduty(price_print, callback):
         
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
-    print(callback)
     if callback.message:
         chat_id = callback.from_user.id
         user = user_dict[chat_id]
@@ -228,7 +226,7 @@ def callback_query_handler(callback):
             num += 1
             markup = types.InlineKeyboardMarkup()
             a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-            a2 = types.InlineKeyboardButton('1', callback_data='jr')
+            a2 = types.InlineKeyboardButton('str(num)', callback_data='jr')
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
             a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
             a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
@@ -244,7 +242,7 @@ def callback_query_handler(callback):
                 num = 1
             markup = types.InlineKeyboardMarkup()
             a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-            a2 = types.InlineKeyboardButton('1', callback_data='jr')
+            a2 = types.InlineKeyboardButton('str(num)', callback_data='jr')
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
             a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
             a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
