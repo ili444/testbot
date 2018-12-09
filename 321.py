@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 #coding: utf-8
-#import dbworker
+import dbworker
 import telebot
 from telebot.types import LabeledPrice
 from telebot import types
