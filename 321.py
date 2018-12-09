@@ -128,9 +128,6 @@ def handle_start(message):
 def msg_apps(message):
     try:
         chat_id = message.chat.id
-        user = user_dict[chat_id]
-        apps = message.text
-        user.apps = apps
         bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
         dbworker.set_state(str(chat_id), '1')
     except Exception as e:
