@@ -117,7 +117,7 @@ def handle_start(message):
 def msg_hand(message):
     try:
         chat_id = message.chat.id
-        if User(start) = 'ok':
+        if User(start) == 'ok':
             pass
         else:
             start = 'ok'
