@@ -119,18 +119,22 @@ def handle_start(message):
     user_markup1.row('Добавить файл', 'Корзина')
     user_markup1.row('Канцелярия', 'Обратная связь')
     name = message.from_user.first_name
+    dbworker.set_state(str(chat_id), '1')
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
 @bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == '2')
 def msg_apps(message):
-    chat_id = message.chat.id
-    user = user_dict[chat_id]
-    apps = message.text
-    user.apps = apps
-    bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
-    dbworker.set_state(str(chat_id), '1')
+    try:
+        chat_id = message.chat.id
+        user = user_dict[chat_id]
+        apps = message.text
+        user.apps = apps
+        bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
+        dbworker.set_state(str(chat_id), '1')
+    except Exception as e:
+        print(e)
     
     
 @bot.message_handler(content_types=['text', 'document'])
