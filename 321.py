@@ -99,6 +99,7 @@ def go_basket():
     markup.add(types.InlineKeyboardButton("Перейти в корзину", callback_data='корзина'),
                types.InlineKeyboardButton("Изменить примечание ", callback_data='примечания'),
                types.InlineKeyboardButton("Изменить кол-во экземпляров", callback_data='назад')
+              )
     return markup
                
 def gen_markup2():
