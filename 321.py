@@ -128,6 +128,9 @@ def handle_start(message):
 def msg_apps(message):
     try:
         chat_id = message.chat.id
+        user = user_dict[chat_id]
+        apps = message.text
+        user.apps = apps
         bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
         dbworker.set_state(str(chat_id), '1')
     except Exception as e:
@@ -207,7 +210,7 @@ def gg_basket(callback):
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
-            ('\n\n' + user.link + '\n\n')]
+            ('\n\n' + user.link + '\n\n'), ('Прим.\n' + user.apps + '\n\n')]
  
 def callduty(price_print, callback):
     chat_id = callback.from_user.id
@@ -359,12 +362,17 @@ def callback_query_handler(callback):
             bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                   text='Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
-            bot.send_message(callback.from_user.id, 'Выберите услугу:', reply_markup=main_menu())
+            
         
 
             with shelve.open('itog.py') as db:
                 l = []
-                for line3 in db.values():
+                r = []
+                lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
+                for dd in lst:
+                    a = db.get(dd)
+                    r.append(a)
+                for line3 in r:
                     line2 = ' '.join(line3)
                     l.append(line2)
                 m = '\n'.join(l)
@@ -440,7 +448,12 @@ def got_payment(message):
     bot.send_message(message.from_user.id, 'Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
     with shelve.open('itog.py') as db:
         l = []
-        for line3 in db.values():
+        r = []
+        lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
+        for dd in lst:
+            a = db.get(dd)
+            r.append(a)
+        for line3 in r:
             line2 = ' '.join(line3)
             l.append(line2)
         m = '\n'.join(l)
