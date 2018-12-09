@@ -124,7 +124,7 @@ def handle_start(message):
                                       f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
-@bot.message_handler(func=lambda message: dbworker.get_current_state(message.chat.id) == '2')
+@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == '2')
 def msg_apps(message):
     try:
         chat_id = message.chat.id
