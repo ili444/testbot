@@ -125,7 +125,6 @@ def msg_hand(message):
             start = 'ok'
             user = User(start)
             user_dict[chat_id] = user
-            return user
         num = 1
         user.num = num
         if message.content_type == 'document':
