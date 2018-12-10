@@ -147,7 +147,7 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'photo':
-            file_id = message.json.photo[0]
+            file_id = 'gg'
             print(str(message.json.photo[0]))
             a = message.json.photo[0]
             print(str(a.file_id))
