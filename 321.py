@@ -139,6 +139,7 @@ def msg_apps(message):
     
 @bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
+    print(message)
     try:
         chat_id = message.chat.id
         start = 'ok'
@@ -146,7 +147,7 @@ def msg_hand(message):
         user_dict[chat_id] = user
         num = 1
         user.num = num
-        if message.photo != None:
+        if message.photo is not None:
             file_id = message.photo.file_id
             print(message.photo.file_id)
             user.file_id = file_id
