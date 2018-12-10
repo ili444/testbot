@@ -139,7 +139,6 @@ def msg_apps(message):
     
 @bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
-    print(message.json.photo)
     try:
         chat_id = message.chat.id
         start = 'ok'
@@ -148,8 +147,10 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'photo':
-            file_id = message.json.photo.file_id
-            print(message.json.photo.file_id)
+            file_id = message.json.photo[0]
+            print(message.json.photo[0])
+            a = message.json.photo[0]
+            print(a.file_id)
             user.file_id = file_id
             file_info = bot.get_file(file_id)
             link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
