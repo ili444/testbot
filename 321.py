@@ -174,12 +174,13 @@ def msg_hand(message):
                                                       'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https://vk.com/doc' in message.text and 'HAYTANRUGA2TO' is not message.text:
-            bot.reply_to(message, 'По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание!\n\n
-            Пример формата ссылок из VK:\n\n
-            https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n
-            https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg'
-                        , reply_markup=go_basket()) 
-            
+            bot.reply_to(message, 'По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание!\n\n'
+            'Пример формата ссылок из VK:\n\n'
+            'https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
+            '1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n'
+            'https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
+            '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
+            '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg', reply_markup=go_basket()) 
         if 'https' in message.text:
                 url = message.text
                 result = urllib.request.urlopen(url)
