@@ -139,7 +139,7 @@ def msg_apps(message):
     
 @bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
-    print(message)
+    print(message.json)
     try:
         chat_id = message.chat.id
         start = 'ok'
