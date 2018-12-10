@@ -137,7 +137,7 @@ def msg_apps(message):
         print(e)
     
     
-@bot.message_handler(content_types=['text', 'document'])
+@bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
     try:
         chat_id = message.chat.id
@@ -146,6 +146,17 @@ def msg_hand(message):
         user_dict[chat_id] = user
         num = 1
         user.num = num
+        if message.content_type == 'photo':
+            file_id = message.photo.file_id
+            user.file_id = file_id
+            file_info = bot.get_file(file_id)
+            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
+            user.link = link
+            file_name = message.document.file_name
+            user.file_name = file_name
+            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+                                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
         if message.content_type == 'document':
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -162,6 +173,13 @@ def msg_hand(message):
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                       'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
+        if 'https://vk.com/doc' in message.text and 'HAYTANRUGA2TO' in not message.text:
+            bot.reply_to(message, 'По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание!\n\n
+            Пример формата ссылок из VK:\n\n
+            https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n
+            https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg
+                         \n', reply_markup=go_basket()) 
+            
         if 'https' in message.text:
                 url = message.text
                 result = urllib.request.urlopen(url)
@@ -173,7 +191,9 @@ def msg_hand(message):
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
         if message.text == 'Добавить файл':
             bot.send_message(chat_id,
-                                  text="Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+                                  text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n'
+                                  'Поддерживаю форматы:\n\n'
+                                  'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
         if message.text == 'Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
