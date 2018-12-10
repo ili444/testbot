@@ -173,7 +173,7 @@ def msg_hand(message):
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                       'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
-        if 'https://vk.com/doc' in message.text and 'HAYTANRUGA2TO' in not message.text:
+        if 'https://vk.com/doc' in message.text and 'HAYTANRUGA2TO' is not message.text:
             bot.reply_to(message, 'По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание!\n\n
             Пример формата ссылок из VK:\n\n
             https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n
@@ -403,7 +403,8 @@ def callback_query_handler(callback):
 
             from_chat_id = -1001302729558
             now = datetime.now()
-            time_order = str(f"{now.year}-{now.month}-{now.day}  (int(7) + int({now.hour})):{now.minute}")
+            hours = int(now.hour) + 7              
+            time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
             type_pay = 'По факту получения'
             name = callback.from_user.first_name + ' ' + callback.from_user.last_name + ' @' + callback.from_user.username
             bot.send_message(from_chat_id, f'{m}'
