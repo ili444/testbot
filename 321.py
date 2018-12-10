@@ -146,8 +146,9 @@ def msg_hand(message):
         user_dict[chat_id] = user
         num = 1
         user.num = num
-        if message.content_type == 'photo':
+        if message.photo != None:
             file_id = message.photo.file_id
+            print(message.photo.file_id)
             user.file_id = file_id
             file_info = bot.get_file(file_id)
             link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
