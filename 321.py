@@ -275,9 +275,11 @@ def callback_query_handler(callback):
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите услугу:', reply_markup=inline_markup())
         if callback.data == 'корзина':
             file_name = user.file_name
+            print(file_name)
             url = user.link
             urllib2.urlretrieve(url, file_name)
             if '.docx' in file_name:
+                print(file_name)
                 document = Document(file_name)
                 document.save(f'{file_name}1.docx')
                 document.save(f'{file_name}1.zip')
@@ -288,21 +290,22 @@ def callback_query_handler(callback):
                 print(num_page)
                 user.num_page = int(num_page)
                 gg_basket(callback) 
-            if '.pdf' in file_name:
+            elif '.pdf' in file_name:
                 input1 = PdfFileReader(open(file_name, "rb"))
                 num_page = input1.getNumPages()
                 user.num_page = int(num_page)
                 gg_basket(callback)
-            if '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
-                user.num_page = 2
+            elif '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
+                num_page = 1
+                user.num_page = num_page
                 gg_basket(callback)
-            if '.pptx' in file_name:
-                filename = os.path.abspath('1111.pptx')
+            elif '.pptx' in file_name:
+                filename = os.path.abspath(file_name)
                 np = Presentation(filename)
                 num_page = len(np.slides)
                 user.num_page = int(num_page)
                 gg_basket(callback)
-            if '.xlsx' in file_name:
+            elif '.xlsx' in file_name:
                 xl = pd.ExcelFile(os.path.abspath(file_name))
                 num_page = len(xl.sheet_names)
                 user.num_page = int(num_page)
