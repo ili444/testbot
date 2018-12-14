@@ -294,7 +294,7 @@ def callback_query_handler(callback):
                 user.num_page = int(num_page)
                 gg_basket(callback)
             if '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
-                user.num_page = 1
+                user.num_page = 2
                 gg_basket(callback)
             if '.pptx' in file_name:
                 filename = os.path.abspath('1111.pptx')
