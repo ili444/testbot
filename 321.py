@@ -51,15 +51,8 @@ def inline_markup():
 
 def inline_markup2():
     markup = types.InlineKeyboardMarkup()
-    markup.add(types.InlineKeyboardButton("Добавить файл", callback_data='добавить'))
+    markup.add(types.InlineKeyboardButton("➕ Добавить файл", callback_data='добавить'))
     return markup
-
-def clear_basket():
-    user_markup1 = telebot.types.ReplyKeyboardMarkup(True, False)
-    user_markup1.row('Копирование', 'Ч/Б Печать(распечатка)')
-    user_markup1.row('Канцелярия', 'Печать фото 10х15')
-    user_markup1.row('Цветная печать', 'Обратная связь')
-    return clear_basket()
 
 
 def num_copy_markup1():
@@ -67,8 +60,8 @@ def num_copy_markup1():
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
     a2 = types.InlineKeyboardButton('1', callback_data='jr')
     a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-    a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-    a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+    a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+    a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
     a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
     markup.add(a1, a2, a3)
     markup.add(a4, a5)
@@ -80,8 +73,8 @@ def num_copy_markup2():
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
     a2 = types.InlineKeyboardButton('1', callback_data='jr')
     a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-    a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-    a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+    a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+    a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
     markup.add(a1, a2, a3)
     markup.add(a4, a5)
     return markup
@@ -91,33 +84,33 @@ def gen_markup1():
     markup.row_width = 2
     markup.add(types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now'),
                types.InlineKeyboardButton("По факту получения", callback_data='later'),
-               types.InlineKeyboardButton("Назад", callback_data='корзина'))
+               types.InlineKeyboardButton("⬅ Назад", callback_data='корзина'))
     return markup
 
 def go_basket():
     markup = types.InlineKeyboardMarkup(True)
-    markup.add(types.InlineKeyboardButton("Перейти в корзину", callback_data='корзина'),
-               types.InlineKeyboardButton("Изменить примечание ", callback_data='примечания'),
-               types.InlineKeyboardButton("Изменить кол-во экземпляров", callback_data='назад')
+    markup.add(types.InlineKeyboardButton("🛒 В корзину", callback_data='корзина'),
+               types.InlineKeyboardButton("🔃 Изменить примечание ", callback_data='примечания'),
+               types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
               )
     return markup
                
 def gen_markup2():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
-    markup.add(types.InlineKeyboardButton("Оформить", callback_data='оформить'),
-               types.InlineKeyboardButton("Добавить файл", callback_data='добавить'),
-               types.InlineKeyboardButton("Очистить", callback_data='очистить'),
-               types.InlineKeyboardButton("Назад", callback_data='назад')
+    markup.add(types.InlineKeyboardButton("🏁 Оформить", callback_data='оформить'),
+               types.InlineKeyboardButton("➕ Добавить файл", callback_data='добавить'),
+               types.InlineKeyboardButton("❎ Очистить", callback_data='очистить'),
+               types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
                )
     return markup
 
 
-@bot.message_handler(commands=['start'])
+@bot.message_handler(commands=['start', 'reset'])
 def handle_start(message):
     user_markup1 = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup1.row('Добавить файл', 'Корзина')
-    user_markup1.row('Канцелярия', 'Обратная связь')
+    user_markup1.row('➕ Добавить файл', '🛒 Корзина')
+    user_markup1.row('📌 Канцелярия', '📲 Обратная связь')
     name = message.from_user.first_name
     dbworker.set_state(str(message.chat.id), '1')
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
@@ -146,10 +139,9 @@ def msg_hand(message):
         user_dict[chat_id] = user
         num = 1
         user.num = num
-        print(message.content_type)
         if message.content_type == 'photo':
-                bot.send_message(message.chat.id, 'Пожалуйста скиньте фотографию, как файл!\n\n'
-                                               'Поддерживаю форматы:\n\npdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
+                bot.send_message(message.chat.id, '❗Пожалуйста скиньте фотографию, как файл❗\n\n'
+                                               'Поддерживаю форматы:\n\✔npdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.content_type == 'document':
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -161,10 +153,10 @@ def msg_hand(message):
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id, 'Такие старые форматы - не смогу определить их'
                                                            'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
-                                                           'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
+                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                                      '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
@@ -174,21 +166,21 @@ def msg_hand(message):
                 user.file_name = file_name
                 user.link = url
                 bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                  'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
+                                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
-                bot.reply_to(message, 'По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание!\n\n'
+                bot.reply_to(message, '❗По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание❗\n\n'
                     'Пример формата ссылок из VK:\n\n'
-                    'https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
+                    '📎 https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
                     '1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n'
-                    'https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
+                    '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
                     '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
                     '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg', reply_markup=inline_markup2()) 
         if message.text == 'Добавить файл':
             bot.send_message(chat_id,
                                   text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n'
                                   'Поддерживаю форматы:\n\n'
-                                  'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
+                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == 'Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
@@ -221,7 +213,6 @@ def msg_hand(message):
 def gg_basket(callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
-    print(user.num_page)
     with shelve.open('itog.py') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
             (str(user.num_page) + ' стр.'),
@@ -247,8 +238,8 @@ def callback_query_handler(callback):
             a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
             a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+            a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+            a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
             a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
@@ -263,8 +254,8 @@ def callback_query_handler(callback):
             a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
             a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+            a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+            a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
             a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
@@ -334,7 +325,9 @@ def callback_query_handler(callback):
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..')
             dbworker.set_state(str(chat_id), '2')
         if callback.data == 'оформить':
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите тип оплаты ..', reply_markup=gen_markup1())
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Внимание❗ Если кол-во страниц' 
+                                  'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"'  
+                                  'Выберите тип оплаты ..', reply_markup=gen_markup1())
         if callback.data == 'очистить':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
@@ -352,8 +345,8 @@ def callback_query_handler(callback):
             a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
             a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-            a4 = types.InlineKeyboardButton("Назад", callback_data=u'назад1')
-            a5 = types.InlineKeyboardButton("Корзина", callback_data=u'корзина')
+            a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+            a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
             a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
@@ -380,7 +373,7 @@ def callback_query_handler(callback):
             number = str(random_pool())
             bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
+                                  text='Супер! ✔Теперь ваш заказ отправлен✔\n\nНомер вашего заказа - ' + number)
             
         
 
