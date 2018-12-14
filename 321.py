@@ -147,19 +147,9 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'photo':
-            file_id = 'gg'
-            print(str(message.json.photo[0]))
-            a = message.json.photo[0]
-            print(str(a.file_id))
-            user.file_id = file_id
-            file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-            user.link = link
-            file_name = message.document.file_name
-            user.file_name = file_name
-            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+            bot.send_message(message.chat.id, 'Пожалуйста скиньте фотографию, как файл\n\nПоддерживаю форматы:\n\n'
                                                       'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
-                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                                      )
         if message.content_type == 'document':
                 file_id = message.document.file_id
                 user.file_id = file_id
@@ -177,12 +167,12 @@ def msg_hand(message):
                                                       'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https' in message.text:
-            if 'HAYTANRUGA2TO' in message.text:
-                url = message.text
-                result = urllib.request.urlopen(url)
-                file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
-                user.file_name = file_name
-                user.link = url
+            if 'no_preview' or 'psv4.userapi.com' in message.text:
+                    url = message.text
+                    result = urllib.request.urlopen(url)
+                    file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
+                    user.file_name = file_name
+                    user.link = url
                 bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                   'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
@@ -231,10 +221,10 @@ def msg_hand(message):
 def gg_basket(callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
-    num_page = user.num_page
+    print(user.num_page)
     with shelve.open('itog.py') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
-            (str(num_page) + ' стр.'),
+            (str(user.num_page) + ' стр.'),
             (str(user.num_page * user.num * user.price_print)),
             ('\n\n' + user.link + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
  
