@@ -148,8 +148,7 @@ def msg_hand(message):
         user.num = num
         if message.content_type == 'photo':
             bot.send_message(message.chat.id, 'Пожалуйста скиньте фотографию, как файл\n\nПоддерживаю форматы:\n\n'
-                                                      'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
-                                                      )
+                                              'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg')
         if message.content_type == 'document':
                 file_id = message.document.file_id
                 user.file_id = file_id
