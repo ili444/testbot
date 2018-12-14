@@ -94,7 +94,14 @@ def go_basket():
                types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
               )
     return markup
-               
+
+def go_old():
+    markup = types.InlineKeyboardMarkup(True)
+    markup.add(types.InlineKeyboardButton("🛒 Далее", callback_data='корзина'),
+               types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
+              )
+    return markup   
+    
 def gen_markup2():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
@@ -178,7 +185,7 @@ def msg_hand(message):
                     '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg', reply_markup=inline_markup2()) 
         if message.text == '➕ Добавить файл':
             bot.send_message(chat_id,
-                                  text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n'
+                                  text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
                                   'Поддерживаю форматы:\n\n'
                                   '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == '🛒 Корзина':
@@ -323,8 +330,8 @@ def callback_query_handler(callback):
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..')
             dbworker.set_state(str(chat_id), '2')
         if callback.data == 'оформить':
-            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Внимание❗ Если кол-во страниц' 
-                                  'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"'  
+            bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='❗Внимание❗\nЕсли кол-во страниц ' 
+                                  'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'  
                                   'Выберите тип оплаты ..', reply_markup=gen_markup1())
         if callback.data == 'очистить':
             with shelve.open('itog.py') as db:
