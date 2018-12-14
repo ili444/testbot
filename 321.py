@@ -168,11 +168,11 @@ def msg_hand(message):
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
-                    url = message.text
-                    result = urllib.request.urlopen(url)
-                    file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
-                    user.file_name = file_name
-                    user.link = url
+                url = message.text
+                result = urllib.request.urlopen(url)
+                file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
+                user.file_name = file_name
+                user.link = url
                 bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                   'pdf, docx, pptx, xlsx\nfrw, cdw, dwg\npng, jpeg'
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
