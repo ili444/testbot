@@ -62,7 +62,7 @@ def num_copy_markup1():
     a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
     a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
     a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-    a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
+    a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
     markup.add(a1, a2, a3)
     markup.add(a4, a5)
     markup.add(a6)
@@ -113,8 +113,8 @@ def handle_start(message):
     user_markup1.row('📌 Канцелярия', '📲 Обратная связь')
     name = message.from_user.first_name
     dbworker.set_state(str(message.chat.id), '1')
-    bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n- распечатки'
-                                      f' А4;\n- копии А4;\n- купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
+    bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n🔹 распечатки'
+                                      f' А4;\n🔹 копии А4;\n🔹 купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
 @bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == '2')
@@ -151,8 +151,8 @@ def msg_hand(message):
                 file_name = message.document.file_name
                 user.file_name = file_name
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id, 'Такие старые форматы - не смогу определить их'
-                                                           'стоимость!\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
+                    bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
+                                                           'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
                                                            '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
@@ -176,12 +176,12 @@ def msg_hand(message):
                     '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
                     '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
                     '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg', reply_markup=inline_markup2()) 
-        if message.text == 'Добавить файл':
+        if message.text == '➕ Добавить файл':
             bot.send_message(chat_id,
                                   text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n'
                                   'Поддерживаю форматы:\n\n'
                                   '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
-        if message.text == 'Корзина':
+        if message.text == '🛒 Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
                 if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
@@ -240,7 +240,7 @@ def callback_query_handler(callback):
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
             a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
             a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-            a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
+            a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
             markup.add(a6)
@@ -256,7 +256,7 @@ def callback_query_handler(callback):
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
             a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
             a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-            a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
+            a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
             markup.add(a6)
@@ -266,7 +266,6 @@ def callback_query_handler(callback):
             bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите услугу:', reply_markup=inline_markup())
         if callback.data == 'корзина':
             file_name = user.file_name
-            print(file_name)
             url = user.link
             urllib2.urlretrieve(url, file_name)
             if '.docx' in file_name:
@@ -278,7 +277,6 @@ def callback_query_handler(callback):
                 f = zf.open('docProps/app.xml').read()
                 soup = BeautifulSoup(f, 'xml')
                 num_page = soup.find('Pages').next_element
-                print(num_page)
                 user.num_page = int(num_page)
                 gg_basket(callback) 
             elif '.pdf' in file_name:
@@ -347,7 +345,7 @@ def callback_query_handler(callback):
             a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
             a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
             a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-            a6 = types.InlineKeyboardButton("Примечания", callback_data=u'примечания')
+            a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
             markup.add(a1, a2, a3)
             markup.add(a4, a5)
             markup.add(a6)
@@ -373,7 +371,7 @@ def callback_query_handler(callback):
             number = str(random_pool())
             bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
             bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text='Супер! ✔Теперь ваш заказ отправлен✔\n\nНомер вашего заказа - ' + number)
+                                  text='Супер!✔\nТеперь ваш заказ отправлен✔\n\nНомер вашего заказа - ' + number)
             
         
 
