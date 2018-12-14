@@ -293,7 +293,7 @@ def callback_query_handler(callback):
                 num_page = input1.getNumPages()
                 user.num_page = int(num_page)
                 gg_basket(callback)
-            if '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg':
+            if '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
                 user.num_page = 1
                 gg_basket(callback)
             if '.pptx' in file_name:
