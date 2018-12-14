@@ -394,7 +394,7 @@ def callback_query_handler(callback):
                     line2 = ' '.join(line3)
                     l.append(line2)
                 m = '\n'.join(l)
-                print(m)
+                
 
 
             from_chat_id = -1001302729558
