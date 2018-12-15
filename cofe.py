@@ -1,5 +1,4 @@
 import telebot
-import constants
 import shelve
 import datetime
 from datetime import datetime
