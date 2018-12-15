@@ -160,14 +160,14 @@ def msg_hand(message):
                 file_name = message.document.file_name
                 user.file_name = file_name
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
-                                                           'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
+                    bot.send_message(message.from_user.id, '❗Такие старые форматы - .doc, .xls, .ppt. Не смогу определить их'
+                                                           'стоимость❗\nПоэтому принимаю кол-во страниц за 1❗\n\nПоддерживаю форматы:\n\n'
                                                            '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                           '\n\nВыберите услугу:', reply_markup=go_old)
+                                                           '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                       '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                      '\n\nВыберите услугу:', reply_markup=go_old())
+                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
                 url = message.text
@@ -176,8 +176,8 @@ def msg_hand(message):
                 user.file_name = file_name
                 user.link = url
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
-                                                           'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
+                    bot.send_message(message.from_user.id, '❗Такие старые форматы - .doc, .xls, .ppt. Не смогу определить их'
+                                                           'стоимость❗\nПоэтому принимаю кол-во страниц за 1❗\n\nПоддерживаю форматы:\n\n'
                                                            '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                                            '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
