@@ -287,10 +287,11 @@ def callback_inline(callback):
                         s.append(float(lin))
                         l.append(line2)
                     total_price = sum(s)
+                    print(total_price)
                     m = ' ₽\n\n🔹 '.join(l)
                     user.total_price = total_price
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='Ваша корзина :\n\n'
+                bot.send_message(chat_id,
+                                 text='Ваша корзина :\n\n'
                                             f'🔹 {m} ₽.\n\n'
                                             f'Итого: {str(total_price)}  ₽.',
                                       reply_markup=finish_markup())
