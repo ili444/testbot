@@ -71,7 +71,7 @@ def num_copy_markup1():
 def num_copy_markup2(callback, num):
     markup = types.InlineKeyboardMarkup()
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-    a2 = types.InlineKeyboardButton(str(user.num), callback_data='jr')
+    a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
     a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
     a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
     a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
@@ -364,8 +364,9 @@ def callback_query_handler(callback):
             if callback.data == 'Ч/Б Печать(распечатка)':  
                 price_print = 2.5
                 callduty(price_print, callback)
-                if user.num != 1:
-                    markup = num_copy_markup2(callback, user.num)
+                num = user.num
+                if num != 1:
+                    markup = num_copy_markup2(callback, num)
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
@@ -373,8 +374,9 @@ def callback_query_handler(callback):
             if callback.data == 'Печать фото 10х15':
                 price_print = 10.0
                 callduty(price_print, callback)
-                if user.num != 1:
-                    markup = num_copy_markup2(callback, user.num)
+                num = user.num
+                if num != 1:
+                    markup = num_copy_markup2(callback, num)
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
@@ -382,8 +384,9 @@ def callback_query_handler(callback):
             if callback.data == 'Цветная печать А4':
                 price_print = 20.0
                 callduty(price_print, callback)
-                if user.num != 1:
-                    markup = num_copy_markup2(callback, user.num)
+                num = user.num
+                if num != 1:
+                    markup = num_copy_markup2(callback, num)
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
