@@ -178,7 +178,7 @@ def msg_hand(message):
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
                                                            'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
-                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg
+                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                                            '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
