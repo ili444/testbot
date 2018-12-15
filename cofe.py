@@ -271,7 +271,7 @@ def callback_inline(callback):
                 markup.add(a4, a5)
                 bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id, reply_markup=markup)
                 user.num = num
-            if callback.data == "Корзина":
+            if callback.data == "корзина":
                 with shelve.open('user_db.py') as db:
                     l = []
                     s = []
