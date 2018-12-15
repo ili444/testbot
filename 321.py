@@ -99,8 +99,8 @@ def go_basket():
 
 def go_old():
     markup = types.InlineKeyboardMarkup(True)
-    markup.add(types.InlineKeyboardButton("🛒 Далее", callback_data='корзина'),
-               types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
+    markup.add(types.InlineKeyboardButton("🛒 Далее", callback_data='корзина2'),
+               types.InlineKeyboardButton("❎ Очистить", callback_data='очистить')
               )
     return markup   
     
@@ -162,11 +162,12 @@ def msg_hand(message):
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
                                                            'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
-                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
+                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg
+                                                           '\n\nВыберите услугу:', reply_markup=go_old)
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                       '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                                      '\n\nВыберите услугу:', reply_markup=go_old())
         if 'https' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
                 url = message.text
@@ -174,7 +175,13 @@ def msg_hand(message):
                 file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
                 user.file_name = file_name
                 user.link = url
-                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+                if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
+                    bot.send_message(message.from_user.id, '❗Такие старые форматы - не смогу определить их'
+                                                           'стоимость❗\nПерешлю без выставления чека!\n\nПоддерживаю форматы:\n\n'
+                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg
+                                                           '\n\nВыберите услугу:', reply_markup=inline_markup())
+                else:
+                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
                                                   '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
@@ -294,6 +301,10 @@ def callback_query_handler(callback):
                     num_page = input1.getNumPages()
                     user.num_page = int(num_page)
                     gg_basket(callback)
+                elif file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
+                    num_page = 1
+                    user.num_page = num_page
+                    gg_basket(callback) 
                 elif '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
                     num_page = 1
                     user.num_page = num_page
@@ -431,7 +442,6 @@ def callback_query_handler(callback):
                 bot.answer_callback_query(callback.id, "Вы выбрали - Cейчас в Telegram")
                 price = str(user.total_price)
                 price1 = user.total_price * 100
-                print(price1)
                 prices = [LabeledPrice(label=f'Стоимость услуги: ', amount=int(price1))]
                 title = user.type_print
                 if price1 > 6569.0:
@@ -448,6 +458,7 @@ def callback_query_handler(callback):
                                  photo_width=512,
                                  photo_size=512,
                                  )
+                 
                 else:
                     bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                       text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
@@ -492,7 +503,8 @@ def got_payment(message):
         m = '\n'.join(l)
     from_chat_id = -1001302729558
     now = datetime.now()
-    time_order = str(f"{now.year}-{now.month}-{now.day}  (int(7) + int({now.hour})):{now.minute}")
+    hours = int(now.hour) + 7              
+    time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
     type_pay = 'Наличные'
     name = message.from_user.first_name + ' ' + message.from_user.last_name + ' @' + message.from_user.username
     bot.send_message(from_chat_id, f'{m}'
