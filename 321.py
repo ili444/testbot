@@ -103,13 +103,6 @@ def go_basket():
     return markup
 
 
-def go_old():
-    markup = types.InlineKeyboardMarkup(True)
-    markup.add(types.InlineKeyboardButton("🛒 Далее", callback_data='корзина2'),
-               types.InlineKeyboardButton("❎ Очистить", callback_data='очистить')
-               )
-    return markup
-
 def back():
     markup = types.InlineKeyboardMarkup(True)
     markup.add(types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
@@ -162,8 +155,11 @@ def handle_start(message):
     user_markup1.row('📌 Канцелярия', '📲 Обратная связь')
     name = message.from_user.first_name
     dbworker.set_state(str(message.chat.id), '1')
-    bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n🔹 распечатки'
-                                      f' А4;\n🔹 копии А4;\n🔹 купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
+    bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n🔹 Ч/Б копии/распечатка А4 - 2,5 руб/стр.'
+                                        f'\n🔹 А4 Ч/Б двусторонняя - 4 руб/стр.\n🔹 Скан - 2 руб/стр.\n🔹 Цветная распечатка А4 - 20 руб/стр.\n'
+                                      f'🔹 Печать фото 10*15 - 10 руб/фото.'
+                                      f'\n🔹 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.'
+                                      f'\n🔹 Купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
 
@@ -183,12 +179,15 @@ def msg_apps(message):
 @bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
     try:
-        chat_id = message.chat.id
+        chat_id = message.from_user.id
         start = 'ok'
         user = User(start)
         user_dict[chat_id] = user
         num = 1
         user.num = num
+        if message.text == '📲 Обратная связь':
+            bot.send_contact(chat_id, phone_number=89039206886, first_name='Копир-кот')
+            bot.send_location(chat_id, 56.012386, 92.8707427)
         if message.content_type == 'photo':
             file_id = (message.json).get('photo')[0].get('file_id')
             user.file_id = file_id
@@ -197,8 +196,7 @@ def msg_hand(message):
             user.link = link
             file_name = file_id[:10] + '.png'
             user.file_name = file_name
-            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                              '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+            bot.send_message(message.chat.id, f'💾 {file_name}'
                                               '\n\nВыберите услугу:', reply_markup=inline_markup())
         if message.content_type == 'document':
             file_id = message.document.file_id
@@ -210,15 +208,16 @@ def msg_hand(message):
             user.file_name = file_name
             if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                 bot.send_message(message.from_user.id,
-                                 '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
+                                 '❗Такие старые форматы  -  .doc,  .xls,  .ppt.❗\n\n'
+                                 f'💾 {file_name}\n\n'
+                                 '❗Не смогу определить их'
                                  ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
-                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                bot.send_message(message.chat.id, f'💾 {file_name}'
                                                   '\n\nВыберите услугу:', reply_markup=inline_markup())
-        if 'https' in message.text:
+        if 'http' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
                 url = message.text
                 result = urllib.request.urlopen(url)
@@ -227,28 +226,32 @@ def msg_hand(message):
                 user.link = url
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     bot.send_message(message.from_user.id,
-                                     '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
-                                     ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
-                                     '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                     '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                     '❗Такие старые форматы  -  .doc,  .xls,  .ppt.❗\n\n'
+                                    f'💾 {file_name}\n\n'
+                                    '❗Не смогу определить их'
+                                    ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
+                                    '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                    '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
-                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                      '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                    bot.send_message(message.chat.id, f'💾 {file_name}\n\n'
                                                       '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.reply_to(message, '❗По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание❗\n\n'
                                       'Пример формата ссылок из VK:\n\n'
                                       '📎 https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
-                                      '1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n'
+                                      '1544379753:9642c332b34e71d369&api=1&no_preview=1\n\n'
                                       '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
                                       '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
-                                      '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg',
+                                      '-Yci9uxQqf2IpI6fcSUZAhw02RKOfVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg',
                              reply_markup=inline_markup2())
         if message.text == '➕ Добавить файл':
             bot.send_message(chat_id,
-                             text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
-                                  'Поддерживаю форматы:\n\n'
-                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
+                             text='📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n' 
+                                    '📌 Цветная распечатка А4 - 20 руб/стр.\n\n' 
+                                    '📌 Печать фото 10*15 - 10 руб/фото.\n\n'
+                                    '❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
+                                    'Поддерживаю форматы:\n\n'
+                                    '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == '🛒 Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
@@ -334,7 +337,9 @@ def callback_query_handler(callback):
                 user.num = num
                 bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id, reply_markup=markup)
             if callback.data == 'назад1':
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите услугу:',
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text=f'💾 {user.file_name}\n\n'
+                                        f'Выберите услугу:',
                                       reply_markup=inline_markup())
             if callback.data == 'корзина':
                 file_name = user.file_name
@@ -397,7 +402,8 @@ def callback_query_handler(callback):
                                       reply_markup=gen_markup2())
             if callback.data == 'примечания':
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='Идём дальше! Напишите примечания к заказу ..', reply_markup=back())
+                                      text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
+                                           f'💾 {user.file_name}\n\n', reply_markup=back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
@@ -416,7 +422,12 @@ def callback_query_handler(callback):
                 num = 1
                 user.num = num
                 bot.send_message(callback.from_user.id,
-                                 "Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+                                 '📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n' 
+                                 '📌 Цветная распечатка А4 - 20 руб/стр.\n\n' 
+                                 '📌 Печать фото 10*15 - 10 руб/фото.\n\n'
+                                 '❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
+                                 'Поддерживаю форматы:\n\n'
+                                 '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
             if callback.data == 'назад':
                 markup = types.InlineKeyboardMarkup()
                 a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
@@ -480,10 +491,10 @@ def callback_query_handler(callback):
                         t.append(line1)
                     m = '\n'.join(l)
                     j = ' ₽\n\n💾 '.join(t)
-                from_chat_id = -1001302729558
                 now = datetime.now()
                 hours = int(now.hour) + 7
-                time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
+                time_order = f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}"
+                from_chat_id = -1001302729558
                 type_pay = 'По факту получения'
                 name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
@@ -612,6 +623,8 @@ def got_payment(message):
 def random_pool():
     a = random.randint(999, 9999)
     return a
+
+
 
 
 
