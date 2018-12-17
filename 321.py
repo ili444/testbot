@@ -27,6 +27,7 @@ server = Flask(__name__)
 
 user_dict = {}
 
+
 class User:
     def __init__(self, start):
         self.start = start
@@ -49,6 +50,7 @@ def inline_markup():
                types.InlineKeyboardButton("Печать фото 10х15", callback_data='Печать фото 10х15'))
     return markup
 
+
 def inline_markup2():
     markup = types.InlineKeyboardMarkup()
     markup.add(types.InlineKeyboardButton("➕ Добавить файл", callback_data='добавить'))
@@ -68,6 +70,7 @@ def num_copy_markup1():
     markup.add(a6)
     return markup
 
+
 def num_copy_markup2(callback, num):
     markup = types.InlineKeyboardMarkup()
     a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
@@ -81,6 +84,7 @@ def num_copy_markup2(callback, num):
     markup.add(a6)
     return markup
 
+
 def gen_markup1():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
@@ -89,21 +93,29 @@ def gen_markup1():
                types.InlineKeyboardButton("⬅ Назад", callback_data='корзина'))
     return markup
 
+
 def go_basket():
     markup = types.InlineKeyboardMarkup(True)
     markup.add(types.InlineKeyboardButton("🛒 В корзину", callback_data='корзина'),
                types.InlineKeyboardButton("🔃 Изменить примечание ", callback_data='примечания'),
                types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
-              )
+               )
     return markup
+
 
 def go_old():
     markup = types.InlineKeyboardMarkup(True)
     markup.add(types.InlineKeyboardButton("🛒 Далее", callback_data='корзина2'),
                types.InlineKeyboardButton("❎ Очистить", callback_data='очистить')
-              )
-    return markup   
-    
+               )
+    return markup
+
+def back():
+    markup = types.InlineKeyboardMarkup(True)
+    markup.add(types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
+               )
+    return markup
+
 def gen_markup2():
     markup = types.InlineKeyboardMarkup(True)
     markup.row_width = 2
@@ -113,6 +125,34 @@ def gen_markup2():
                types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
                )
     return markup
+
+def check_basket(chat_id, callback):
+    chat_id = callback.from_user.id
+    user = user_dict[chat_id]
+    with shelve.open('itog.py') as db:
+        lst3 = list(db.keys())
+        if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
+            bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=inline_markup2())
+        else:
+            l = []
+            s = []
+            r = []
+            lst3 = list(db.keys())
+            lst = list((filter(lambda x: str(chat_id) in x, lst3)))
+            for dd in lst:
+                a = db.get(dd)
+                r.append(a)
+            for line3 in r:
+                line2 = ' '.join(line3[:5])
+                lin = line3[4]
+                s.append(float(lin))
+                l.append(line2)
+            total_price = sum(s)
+            m = ' ₽\n\n💾 '.join(l)
+            user.total_price = total_price
+            bot.send_message(chat_id, 'Ваша корзина :\n\n'
+                                      f'💾 {m} ₽.\n\n'
+                                      f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
 
 
 @bot.message_handler(commands=['start', 'reset'])
@@ -126,6 +166,7 @@ def handle_start(message):
                                       f' А4;\n🔹 копии А4;\n🔹 купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
 
+
 @bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == '2')
 def msg_apps(message):
     try:
@@ -133,12 +174,12 @@ def msg_apps(message):
         user = user_dict[chat_id]
         apps = message.text
         user.apps = apps
-        bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket()) 
+        bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=go_basket())
         dbworker.set_state(str(chat_id), '1')
     except Exception as e:
         print(e)
-    
-    
+
+
 @bot.message_handler(content_types=['text', 'document', 'photo'])
 def msg_hand(message):
     try:
@@ -149,25 +190,34 @@ def msg_hand(message):
         num = 1
         user.num = num
         if message.content_type == 'photo':
-                bot.send_message(message.chat.id, '❗Пожалуйста скиньте фотографию, как файл❗\n\n'
-                                               'Поддерживаю форматы:\n\✔npdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
+            file_id = (message.json).get('photo')[0].get('file_id')
+            user.file_id = file_id
+            file_info = bot.get_file(file_id)
+            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
+            user.link = link
+            file_name = file_id[:10] + '.png'
+            user.file_name = file_name
+            bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+                                              '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                              '\n\nВыберите услугу:', reply_markup=inline_markup())
         if message.content_type == 'document':
-                file_id = message.document.file_id
-                user.file_id = file_id
-                file_info = bot.get_file(file_id)
-                link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-                user.link = link
-                file_name = message.document.file_name
-                user.file_name = file_name
-                if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id, '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
-                                                           ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
-                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                           '\n\nВыберите услугу:', reply_markup=inline_markup())
-                else:
-                    bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                      '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
+            file_id = message.document.file_id
+            user.file_id = file_id
+            file_info = bot.get_file(file_id)
+            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
+            user.link = link
+            file_name = message.document.file_name
+            user.file_name = file_name
+            if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
+                bot.send_message(message.from_user.id,
+                                 '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
+                                 ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
+                                 '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                 '\n\nВыберите услугу:', reply_markup=inline_markup())
+            else:
+                bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
+                                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
         if 'https' in message.text:
             if 'no_preview' or 'psv4.userapi.com' in message.text:
                 url = message.text
@@ -176,25 +226,27 @@ def msg_hand(message):
                 user.file_name = file_name
                 user.link = url
                 if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id, '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
-                                                           ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
-                                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                           '\n\nВыберите услугу:', reply_markup=inline_markup())
+                    bot.send_message(message.from_user.id,
+                                     '❗Такие старые форматы  -  .doc,  .xls,  .ppt. Не смогу определить их'
+                                     ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 1❗\n\nПоддерживаю форматы:\n\n'
+                                     '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                     '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
                     bot.send_message(message.chat.id, 'Поддерживаю форматы:\n\n'
-                                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                                  '\n\nВыберите услугу:', reply_markup=inline_markup())
+                                                      '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
+                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
             else:
                 bot.reply_to(message, '❗По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание❗\n\n'
-                    'Пример формата ссылок из VK:\n\n'
-                    '📎 https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
-                    '1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n'
-                    '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
-                    '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
-                    '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg', reply_markup=inline_markup2()) 
+                                      'Пример формата ссылок из VK:\n\n'
+                                      '📎 https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
+                                      '1544379753:9642c332b35e71d379&api=1&no_preview=1\n\n'
+                                      '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
+                                      '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
+                                      '-Yci9uxQqf2IpI6fcSUZAhw0lRKOiVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg',
+                             reply_markup=inline_markup2())
         if message.text == '➕ Добавить файл':
             bot.send_message(chat_id,
-                                  text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
+                             text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
                                   'Поддерживаю форматы:\n\n'
                                   '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == '🛒 Корзина':
@@ -224,24 +276,26 @@ def msg_hand(message):
                                               f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
     except Exception as e:
         print(e)
+        bot.send_message(481077652, str(e))
 
-        
 def gg_basket(callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
     with shelve.open('itog.py') as db:
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
-            (str(user.num_page) + ' стр.'),
-            (str(user.num_page * user.num * user.price_print)),
-            ('\n\n' + user.link + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
- 
+                                                   (str(user.num_page) + ' стр.'),
+                                                   (str(user.num_page * user.num * user.price_print)),
+                                                   ('\n\n' + user.link + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
+
+
 def callduty(price_print, callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
     type_print = callback.data
     user.price_print = price_print
     user.type_print = type_print
-        
+
+
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
     try:
@@ -280,13 +334,13 @@ def callback_query_handler(callback):
                 user.num = num
                 bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id, reply_markup=markup)
             if callback.data == 'назад1':
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите услугу:', reply_markup=inline_markup())
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Выберите услугу:',
+                                      reply_markup=inline_markup())
             if callback.data == 'корзина':
                 file_name = user.file_name
                 url = user.link
                 urllib2.urlretrieve(url, file_name)
                 if '.docx' in file_name:
-                    print(file_name)
                     document = Document(file_name)
                     document.save(f'{file_name}1.docx')
                     document.save(f'{file_name}1.zip')
@@ -295,7 +349,7 @@ def callback_query_handler(callback):
                     soup = BeautifulSoup(f, 'xml')
                     num_page = soup.find('Pages').next_element
                     user.num_page = int(num_page)
-                    gg_basket(callback) 
+                    gg_basket(callback)
                 elif '.pdf' in file_name:
                     input1 = PdfFileReader(open(file_name, "rb"))
                     num_page = input1.getNumPages()
@@ -304,7 +358,7 @@ def callback_query_handler(callback):
                 elif file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
                     num_page = 1
                     user.num_page = num_page
-                    gg_basket(callback) 
+                    gg_basket(callback)
                 elif '.frw' or '.cdw' or '.png' or '.jpeg' or '.dwg' in file_name:
                     num_page = 1
                     user.num_page = num_page
@@ -338,27 +392,31 @@ def callback_query_handler(callback):
                     m = ' ₽\n\n💾 '.join(l)
                     user.total_price = total_price
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
-                                                       f'💾 {m} ₽.\n\n'
-                                                       f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
+                                                                                                    f'💾 {m} ₽.\n\n'
+                                                                                                    f'Итого: {str(total_price)}  ₽.',
+                                      reply_markup=gen_markup2())
             if callback.data == 'примечания':
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Идём дальше! Напишите примечания к заказу ..')
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text='Идём дальше! Напишите примечания к заказу ..', reply_markup=back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='❗Внимание❗\nЕсли кол-во страниц ' 
-                                      'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'  
-                                      'Выберите тип оплаты ..', reply_markup=gen_markup1())
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text='❗Внимание❗\nЕсли кол-во страниц '
+                                           'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'
+                                           'Выберите тип оплаты ..', reply_markup=gen_markup1())
             if callback.data == 'очистить':
                 with shelve.open('itog.py') as db:
                     lst3 = list(db.keys())
                     lst = list((filter(lambda x: str(chat_id) in x, lst3)))
                     for dd in lst:
                         del db[dd]
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина очищена!', reply_markup=inline_markup2())
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text='Ваша корзина очищена!', reply_markup=inline_markup2())
             if callback.data == 'добавить':
                 num = 1
                 user.num = num
                 bot.send_message(callback.from_user.id,
-                                       "Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
+                                 "Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать")
             if callback.data == 'назад':
                 markup = types.InlineKeyboardMarkup()
                 a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
@@ -372,7 +430,7 @@ def callback_query_handler(callback):
                 markup.add(a6)
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='Хорошо, выберите кол-во копий:', reply_markup=markup)
-            if callback.data == 'Ч/Б Печать(распечатка)':  
+            if callback.data == 'Ч/Б Печать(распечатка)':
                 price_print = 2.5
                 callduty(price_print, callback)
                 num = user.num
@@ -405,26 +463,32 @@ def callback_query_handler(callback):
             if callback.data == "later":
                 number = str(random_pool())
                 bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
-                bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='Супер!✔\nТеперь ваш заказ отправлен✔\n\nНомер вашего заказа - ' + number)
+
                 with shelve.open('itog.py') as db:
                     l = []
                     r = []
+                    t = []
                     lst3 = list(db.keys())
-                    lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
+                    lst = list((filter(lambda x: str(chat_id) in x, lst3)))  # фильтр на юзера
                     for dd in lst:
                         a = db.get(dd)
                         r.append(a)
                     for line3 in r:
+                        line1 = ' '.join(line3[:5])
                         line2 = ' '.join(line3)
                         l.append(line2)
+                        t.append(line1)
                     m = '\n'.join(l)
+                    j = ' ₽\n\n💾 '.join(t)
                 from_chat_id = -1001302729558
                 now = datetime.now()
-                hours = int(now.hour) + 7              
+                hours = int(now.hour) + 7
                 time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
                 type_pay = 'По факту получения'
-                name = callback.from_user.first_name + ' ' + callback.from_user.last_name + ' @' + callback.from_user.username
+                name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
+                bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                      text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}'
+                                            )
                 bot.send_message(from_chat_id, f'{m}'
                                                f'______________________________\n\n'
                                                f'Номер заказа - {number}\n'
@@ -446,26 +510,40 @@ def callback_query_handler(callback):
                 title = user.type_print
                 if price1 > 6569.0:
                     bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:7231',
-                                 start_parameter='true',
-                                 title=title,
-                                 description=f'Тип услуги: {title}\nЦена {price} ₽',
-                                 invoice_payload='test',
-                                 currency='RUB',
-                                 prices=prices,
-                                 need_phone_number=True,
-                                 photo_url='https://pp.userapi.com/c845218/v845218058/cd929/DMHxsJvNO6s.jpg',
-                                 photo_height=512,
-                                 photo_width=512,
-                                 photo_size=512,
-                                 )
-                 
+                                     start_parameter='true',
+                                     title=title,
+                                     description=f'Тип услуги: {title}\nЦена {price} ₽',
+                                     invoice_payload='test',
+                                     currency='RUB',
+                                     prices=prices,
+                                     need_phone_number=True,
+                                     photo_url='https://pp.userapi.com/c845218/v845218058/cd929/DMHxsJvNO6s.jpg',
+                                     photo_height=512,
+                                     photo_width=512,
+                                     photo_size=512,
+                                     )
+
                 else:
                     bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
-                                            f'Сумма вашего заказа: {price} ₽\n'
-                                            f'Однако Вы можете оплатить заказ по факту получения', reply_markup=gen_markup2())
+                                          text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
+                                               f'Сумма вашего заказа: {price} ₽\n'
+                                               f'Однако Вы можете оплатить заказ по факту получения',
+                                          reply_markup=gen_markup2())
+    except KeyError as a:
+        print(a)
+        chat_id = callback.from_user.id
+        bot.send_message(chat_id,
+                         text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
+                              'Поддерживаю форматы:\n\n'
+                              '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
+        bot.send_message(481077652, str(a))
     except Exception as e:
         print(e)
+        chat_id = callback.from_user.id
+        if e == 'expected string or bytes-like object' or chat_id:
+            check_basket(chat_id, callback)
+        bot.send_message(481077652, str(e))
+
 
 
 
@@ -475,6 +553,7 @@ def shipping(shipping_query):
     print(shipping_query)
     bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=False,
                               error_message='Oh, што-то пошло не так. Попробуйте повторить позже!')
+
 
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def checkout(pre_checkout_query):
@@ -492,21 +571,28 @@ def got_payment(message):
     with shelve.open('itog.py') as db:
         l = []
         r = []
+        t = []
         lst3 = list(db.keys())
-        lst = list((filter(lambda x: str(chat_id) in x, lst3))) #фильтр на юзера
+        lst = list((filter(lambda x: str(chat_id) in x, lst3)))  # фильтр на юзера
         for dd in lst:
             a = db.get(dd)
             r.append(a)
         for line3 in r:
+            line1 = ' '.join(line3[:5])
             line2 = ' '.join(line3)
             l.append(line2)
+            t.append(line1)
         m = '\n'.join(l)
+        j = ' ₽\n\n💾 '.join(t)
     from_chat_id = -1001302729558
     now = datetime.now()
-    hours = int(now.hour) + 7              
+    hours = int(now.hour) + 7
     time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
     type_pay = 'Наличные'
-    name = message.from_user.first_name + ' ' + message.from_user.last_name + ' @' + message.from_user.username
+    name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
+    bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id,
+                          text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}'
+                          )
     bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
                                    f'Номер заказа - {number}\n'
@@ -516,7 +602,7 @@ def got_payment(message):
                                    f'Итого: {str(user.total_price)} ₽.'
                      )
 
-    with shelve.open('itog') as db:
+    with shelve.open('itog.py') as db:
         lst3 = list(db.keys())
         lst = list((filter(lambda x: str(chat_id) in x, lst3)))
         for dd in lst:
@@ -526,6 +612,7 @@ def got_payment(message):
 def random_pool():
     a = random.randint(999, 9999)
     return a
+
 
 
 
