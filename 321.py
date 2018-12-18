@@ -44,10 +44,13 @@ class User:
 
 def inline_markup():
     markup = types.InlineKeyboardMarkup()
-    markup.row_width = 2
+    markup.row_width = 1
     markup.add(types.InlineKeyboardButton("Ч/Б Печать(распечатка)", callback_data='Ч/Б Печать(распечатка)'),
                types.InlineKeyboardButton("Цветная Печать А4", callback_data='Цветная печать А4'),
-               types.InlineKeyboardButton("Печать фото 10х15", callback_data='Печать фото 10х15'))
+               types.InlineKeyboardButton("Печать фото 10х15", callback_data='Печать фото 10х15'),
+               types.InlineKeyboardButton('А4 Ч/Б двусторонняя', callback_data='А4 Ч/Б двусторонняя'),
+                types.InlineKeyboardButton("Печать на фотобумаге А4 (глянец, матовая)", callback_data='Печать на фотобумаге')
+               )
     return markup
 
 
@@ -119,6 +122,16 @@ def gen_markup2():
                )
     return markup
 
+def kancel():
+    markup = types.InlineKeyboardMarkup(True)
+    markup.row_width = 2
+    markup.add(types.InlineKeyboardButton("✏ Ручки/Карандаши", switch_inline_query_current_chat='Ручки/Карандаши'),
+               types.InlineKeyboardButton("📁 Папки/Файлики", switch_inline_query_current_chat='Папки/Файлики'),
+               types.InlineKeyboardButton("🗒 Блокноты/Тетради", switch_inline_query_current_chat='Блокноты/Тетради')
+               )
+    return markup
+
+
 def check_basket(chat_id, callback):
     chat_id = callback.from_user.id
     user = user_dict[chat_id]
@@ -157,7 +170,7 @@ def handle_start(message):
     dbworker.set_state(str(message.chat.id), '1')
     bot.send_message(message.chat.id, f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n🔹 Ч/Б копии/распечатка А4 - 2,5 руб/стр.'
                                         f'\n🔹 А4 Ч/Б двусторонняя - 4 руб/стр.\n🔹 Скан - 2 руб/стр.\n🔹 Цветная распечатка А4 - 20 руб/стр.\n'
-                                      f'🔹 Печать фото 10*15 - 10 руб/фото.'
+                                      f'🔹 Печать фото 10х15 - 10 руб/фото.'
                                       f'\n🔹 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.'
                                       f'\n🔹 Купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
                      reply_markup=user_markup1)
@@ -185,6 +198,8 @@ def msg_hand(message):
         user_dict[chat_id] = user
         num = 1
         user.num = num
+        if message.text == '📌 Канцелярия':
+            bot.send_message(chat_id, 'Добро пожаловать в канцелярию ..', reply_markup=kancel())
         if message.text == '📲 Обратная связь':
             bot.send_contact(chat_id, phone_number=89039206886, first_name='Копир-кот')
             bot.send_location(chat_id, 56.012386, 92.8707427)
@@ -196,7 +211,8 @@ def msg_hand(message):
             user.link = link
             file_name = file_id[:10] + '.png'
             user.file_name = file_name
-            bot.send_message(message.chat.id, f'💾 {file_name}'
+            bot.send_message(message.chat.id, 'Вы добавили файл:\n\n'
+                                                f'💾 {file_name}'
                                               '\n\nВыберите услугу:', reply_markup=inline_markup())
         if message.content_type == 'document':
             file_id = message.document.file_id
@@ -233,8 +249,9 @@ def msg_hand(message):
                                     '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
                                     '\n\nВыберите услугу:', reply_markup=inline_markup())
                 else:
-                    bot.send_message(message.chat.id, f'💾 {file_name}\n\n'
-                                                      '\n\nВыберите услугу:', reply_markup=inline_markup())
+                    bot.send_message(message.chat.id, 'Вы добавили файл:\n\n'
+                                                        f'💾 {file_name}\n\n'
+                                                      'Выберите услугу:', reply_markup=inline_markup())
             else:
                 bot.reply_to(message, '❗По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание❗\n\n'
                                       'Пример формата ссылок из VK:\n\n'
@@ -246,10 +263,8 @@ def msg_hand(message):
                              reply_markup=inline_markup2())
         if message.text == '➕ Добавить файл':
             bot.send_message(chat_id,
-                             text='📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n' 
-                                    '📌 Цветная распечатка А4 - 20 руб/стр.\n\n' 
-                                    '📌 Печать фото 10*15 - 10 руб/фото.\n\n'
-                                    '❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
+                             text=
+                                    '❗Отправьте, пожалуйста, ссылку на файл, фотографию или сам файл, который нужно распечатать❗\n\n'
                                     'Поддерживаю форматы:\n\n'
                                     '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == '🛒 Корзина':
@@ -277,9 +292,42 @@ def msg_hand(message):
                     bot.send_message(chat_id, 'Ваша корзина :\n\n'
                                               f'💾 {m} ₽.\n\n'
                                               f'Итого: {str(total_price)}  ₽.', reply_markup=gen_markup2())
+        if message.text == 'Ручка шариковая BEIFA 927':
+            user.file_name = message.text
+            user.price_print = 7.0
+            user.type_print = 'Канцелярия'
+            bot.send_message(chat_id, text=f'Выберите кол-во экз-ов:', reply_markup=num_copy_markup1())
     except Exception as e:
         print(e)
         bot.send_message(481077652, str(e))
+
+
+@bot.inline_handler(func=lambda query: True)
+def inline_query(query):
+    print(query)
+    try:
+        if query.query == 'Ручки/Карандаши':
+            r1 = types.InlineQueryResultArticle(
+                id='1',
+                thumb_url='http://kancler30.ru/item_pics/i_dwkj2.png',
+                title="Ручка шариковая BEIFA 927",
+                description='Цена 7 ₽',
+                input_message_content=types.InputTextMessageContent(message_text="Ручка шариковая BEIFA 927"),
+            )
+            bot.answer_inline_query(query.id, [r1])
+        if query.query == 'Папки/Файлики':
+            r1 = types.InlineQueryResultArticle(
+                id='2',
+                thumb_url='https://images.kz.prom.st/41790479_w640_h640_4203.jpg',
+                title="Файлик",
+                description='Цена 2 ₽',
+                input_message_content=types.InputTextMessageContent(message_text="Файлик"),
+            )
+            bot.answer_inline_query(query.id, [r1])
+    except Exception as e:
+        print(e)
+
+
 
 def gg_basket(callback):
     chat_id = callback.from_user.id
@@ -288,7 +336,17 @@ def gg_basket(callback):
         db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
                                                    (str(user.num_page) + ' стр.'),
                                                    (str(user.num_page * user.num * user.price_print)),
-                                                   ('\n\n' + user.link + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
+                                                   ('\n\n' + str(user.link) + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
+
+
+def add_kancel(callback):
+    chat_id = callback.from_user.id
+    user = user_dict[chat_id]
+    with shelve.open('itog.py') as db:
+        db[str(chat_id) + ':' + user.file_name] = [user.file_name, f'({user.type_print})', (str(user.num) + ' экз.'),
+                                                   (' - '),
+                                                   (str(user.num * user.price_print)),
+                                                   ('\n\n' + str(user.link) + '\n\n'), ('Прим.\n' + str(user.apps) + '\n\n')]
 
 
 def callduty(price_print, callback):
@@ -301,7 +359,7 @@ def callduty(price_print, callback):
 
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
-    try:
+    #try:
         if callback.message:
             chat_id = callback.from_user.id
             user = user_dict[chat_id]
@@ -344,7 +402,11 @@ def callback_query_handler(callback):
             if callback.data == 'корзина':
                 file_name = user.file_name
                 url = user.link
-                urllib2.urlretrieve(url, file_name)
+                if user.type_print != 'Канцелярия':
+                    urllib2.urlretrieve(url, file_name)
+
+                if user.type_print == 'Канцелярия':
+                    add_kancel(callback)
                 if '.docx' in file_name:
                     document = Document(file_name)
                     document.save(f'{file_name}1.docx')
@@ -403,7 +465,7 @@ def callback_query_handler(callback):
             if callback.data == 'примечания':
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
-                                           f'💾 {user.file_name}\n\n', reply_markup=back())
+                                           f'💾 {user.file_name}', reply_markup=back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
@@ -422,9 +484,6 @@ def callback_query_handler(callback):
                 num = 1
                 user.num = num
                 bot.send_message(callback.from_user.id,
-                                 '📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n' 
-                                 '📌 Цветная распечатка А4 - 20 руб/стр.\n\n' 
-                                 '📌 Печать фото 10*15 - 10 руб/фото.\n\n'
                                  '❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
                                  'Поддерживаю форматы:\n\n'
                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
@@ -450,7 +509,8 @@ def callback_query_handler(callback):
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='Хорошо, выберите кол-во копий', reply_markup=markup)
+                                      text='📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n'
+                                      'Выберите кол-во копий', reply_markup=markup)
             if callback.data == 'Печать фото 10х15':
                 price_print = 10.0
                 callduty(price_print, callback)
@@ -460,7 +520,9 @@ def callback_query_handler(callback):
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='Хорошо, выберите кол-во копий', reply_markup=markup)
+                                      text=
+                                           '📌 Печать фото 10х15 - 10 руб/фото.\n\n'
+                                           'Выберите кол-во копий', reply_markup=markup)
             if callback.data == 'Цветная печать А4':
                 price_print = 20.0
                 callduty(price_print, callback)
@@ -470,7 +532,31 @@ def callback_query_handler(callback):
                 else:
                     markup = num_copy_markup1()
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='Хорошо, выберите кол-во копий', reply_markup=markup)
+                                      text='📌 Цветная распечатка А4 - 20 руб/стр.\n\n'
+                                           'Выберите кол-во копий', reply_markup=markup)
+            if callback.data == 'А4 Ч/Б двусторонняя':
+                price_print = 4.0
+                callduty(price_print, callback)
+                num = user.num
+                if num != 1:
+                    markup = num_copy_markup2(callback, num)
+                else:
+                    markup = num_copy_markup1()
+                bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                      text='📌 А4 Ч/Б двусторонняя - 4 руб/стр.\n\n'
+                                           'Выберите кол-во копий', reply_markup=markup)
+            if callback.data == 'Печать на фотобумаге':
+                price_print = 30.0
+                callduty(price_print, callback)
+                num = user.num
+                if num != 1:
+                    markup = num_copy_markup2(callback, num)
+                else:
+                    markup = num_copy_markup1()
+                bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                      text=
+                                           '📌 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.\n\n'
+                                           'Выберите кол-во копий', reply_markup=markup)
             if callback.data == "later":
                 number = str(random_pool())
                 bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
@@ -539,7 +625,8 @@ def callback_query_handler(callback):
                                           text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
                                                f'Сумма вашего заказа: {price} ₽\n'
                                                f'Однако Вы можете оплатить заказ по факту получения',
-                                          reply_markup=gen_markup2())
+                                                reply_markup=gen_markup2())
+
     except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
@@ -623,6 +710,7 @@ def got_payment(message):
 def random_pool():
     a = random.randint(999, 9999)
     return a
+
 
 
 
