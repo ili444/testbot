@@ -626,7 +626,6 @@ def callback_query_handler(callback):
                                                f'Сумма вашего заказа: {price} ₽\n'
                                                f'Однако Вы можете оплатить заказ по факту получения',
                                                 reply_markup=gen_markup2())
-
     except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
