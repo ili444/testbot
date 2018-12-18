@@ -359,7 +359,7 @@ def callduty(price_print, callback):
 
 @bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
 def callback_query_handler(callback):
-    #try:
+    try:
         if callback.message:
             chat_id = callback.from_user.id
             user = user_dict[chat_id]
