@@ -872,7 +872,7 @@ def callback_query_handler(callback):
                 prices = [LabeledPrice(label=f'Стоимость услуги: ', amount=int(price1))]
                 title = 'Заказ'
                 if price1 > 6569.0:
-                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:5508',
+                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:7992',
                                      start_parameter='true',
                                      title=title,
                                      description=f'Цена {price} ₽',
