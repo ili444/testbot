@@ -28,7 +28,6 @@ server = Flask(__name__)
 user_dict = {}
 
 
-
 class User:
     def __init__(self, start):
         self.start = start
@@ -332,7 +331,7 @@ def msg_hand(message):
                              text=
                                     '❗Отправьте, пожалуйста, ссылку на файл, фотографию или сам файл, который нужно распечатать❗\n\n'
                                     'Поддерживаю форматы:\n\n'
-                                    '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg', reply_markup=add_position())
+                                    '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
         if message.text == '🛒 Корзина':
             with shelve.open('itog.py') as db:
                 lst3 = list(db.keys())
@@ -400,9 +399,10 @@ def inline_query(query):
                                                                                  '[\xa0](http://kancler30.ru/item_pics/i_dwkj2.png)',
                                                                     parse_mode='Markdown'
                                                                     ),
+
                 reply_markup=num_copy_markup3()
             )
-            bot.answer_inline_query(query.id, [r1], 0)
+            bot.answer_inline_query(query.id, [r1], cache_time=0, is_personal=True)
         if query.query == 'Папки/Файлики':
             r1 = types.InlineQueryResultArticle(
                 id='2',
@@ -413,7 +413,7 @@ def inline_query(query):
                                                                     '[\xa0](https://images.kz.prom.st/41790479_w640_h640_4203.jpg)',
                                                                     parse_mode="Markdown"),
                 reply_markup=num_copy_markup3())
-            bot.answer_inline_query(query.id, [r1], 0)
+            bot.answer_inline_query(query.id, [r1], cache_time=0, is_personal=True)
         if query.query == 'Блокноты/Тетради':
                 r1 = types.InlineQueryResultArticle(
                     id='3',
@@ -425,7 +425,7 @@ def inline_query(query):
                                                                         ,parse_mode='Markdown'),
                     reply_markup=num_copy_markup3()
                 )
-                bot.answer_inline_query(query.id, [r1], 0)
+                bot.answer_inline_query(query.id, [r1], cache_time=0, is_personal=True)
         if query.query == 'Изменить':
             with shelve.open('itog.py') as db:
                 r = []
@@ -457,18 +457,12 @@ def inline_query(query):
                                                         input_message_content=input_content, reply_markup=markup)
                     r.append(r2)
                 dbworker.set_state(str(chat_id), 'change')
-                bot.answer_inline_query(query.id, r, 0)
+                bot.answer_inline_query(query.id, r, cache_time=0, is_personal=True)
     except Exception as e:
         print(e)
 
 
 
-
-def add_position():
-    markup = types.InlineKeyboardMarkup()
-    a1 = types.InlineKeyboardButton("📌 Канцелярия", callback_data=u'Канцелярия')
-    markup.add(a1)
-    return markup
 
 
 
@@ -563,10 +557,10 @@ def callback_query_handler(callback):
             user = user_dict[chat_id]
             num = user.num
             if callback.data == 'удалить позицию':
-                with shelve.open('itog.py') as db:
-                    del db[str(chat_id) + ':' + user.file_name]
                 bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Позиция удалена')
                 check_basket(chat_id, callback)
+                with shelve.open('itog.py') as db:
+                    del db[str(chat_id) + ':' + user.file_name]
             if callback.data == '+1':
                 num += 1
                 user.num = num
@@ -720,7 +714,7 @@ def callback_query_handler(callback):
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
                                  'Поддерживаю форматы:\n\n'
-                                 '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg', reply_markup=add_position())
+                                 '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
             if callback.data == 'Канцелярия':
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='Добро пожаловать в канцелярию ..', reply_markup=kancel())
@@ -872,7 +866,7 @@ def callback_query_handler(callback):
                 prices = [LabeledPrice(label=f'Стоимость услуги: ', amount=int(price1))]
                 title = 'Заказ'
                 if price1 > 6569.0:
-                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:7992',
+                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:5508',
                                      start_parameter='true',
                                      title=title,
                                      description=f'Цена {price} ₽',
@@ -973,6 +967,7 @@ def got_payment(message):
 def random_pool():
     a = random.randint(999, 9999)
     return a
+
 
 
 
