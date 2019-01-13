@@ -15,6 +15,8 @@ from docx import Document
 import zipfile
 from pptx import Presentation
 from bs4 import BeautifulSoup
+from flask import Flask, request
+
 TOKEN = os.environ['token']
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
