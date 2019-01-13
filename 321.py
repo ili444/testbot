@@ -10,7 +10,6 @@ from urllib.parse import urlparse
 from PyPDF2 import PdfFileReader
 import os.path
 import xlrd
-from win32com.client import Dispatch
 import pandas as pd
 from docx import Document
 import zipfile
@@ -627,15 +626,6 @@ def callback_query_handler(callback):
                     urllib2.urlretrieve(url, file_name)
                 elif user.type_print == 'Канцелярия':
                     mark_up.add_kancel(callback)
-                if file_name.endswith('.doc'):
-                    word = Dispatch('Word.Application')
-                    word.Visible = False
-                    word = word.Documents.Open(file_name)
-                    word.Repaginate()
-                    num_page = word.ComputeStatistics(2)
-                    print(num_page)
-                    user.num_page = int(num_page)
-                    mark_up.gg_basket(callback)
                 if file_name.endswith('.docx'):
                     document = Document(file_name)
                     document.save(f'{file_name}1.docx')
@@ -659,12 +649,10 @@ def callback_query_handler(callback):
                         mark_up.gg_basket(callback)
                     else:
                         pass
-                """
                 if file_name.endswith('.doc'):
                     num_page = 0
                     user.num_page = num_page
                     mark_up.gg_basket(callback)
-                """
                 if file_name.endswith('.pptx'):
                     filename = os.path.abspath(file_name)
                     np = Presentation(filename)
