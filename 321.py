@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 # coding: utf-8
-from kanc import dict2, dict_price
 import dbworker, telebot, shelve, random, datetime, urllib, os
 from telebot.types import LabeledPrice
 from telebot import types
