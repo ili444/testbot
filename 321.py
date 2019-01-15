@@ -973,14 +973,12 @@ def Check_Payments():
     chat_id = int(request.form['label'])
     user = user_dict[chat_id]
     print(chat_id)
-    total_price1 = request.form['amount']
+    total_price1 = float(request.form['amount'])
     print(total_price1)
     total_price2 = (float(user.total_price) * 0.98)
     print(total_price2)
     if total_price1 == total_price2:
         mark_up.finish_payments(chat_id)
-    else:
-        bot.send_message(chat_id, 'сумма заказа не соотвествует платежу'
     return "HTTP 200 OK", 200
     
      
