@@ -933,7 +933,9 @@ def got_payment(message):
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
-    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    print(request.stream.read())
+    print('1')
+    #bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "HTTP 200 OK", 200
 
 
