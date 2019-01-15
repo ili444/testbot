@@ -974,7 +974,7 @@ def Check_Payments():
     print(chat_id)
     total_price = request.form['amount']
     print(total_price)
-    bot.send_message(chat_id, 'платеж проведен'
+    bot.send_message(chat_id, 'платеж проведен')
     return "HTTP 200 OK", 200
     
      
