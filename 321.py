@@ -975,15 +975,9 @@ def Check_Payments():
     total_price = request.form['amount']
     print(total_price)
     bot.send_message(chat_id, 'платеж проведен'
-    """
-    user = user_dict[chat_id]
-    print(user.total_price)
-    if total_price == (user.total_price * 0.98):
-        mark_up.finish_payment(chat_id)
-        return "HTTP 200 OK", 200
-    else:
-        return "error", 400
-    """
+    return "HTTP 200 OK", 200
+    
+     
 
 @server.route("/")
 def webhook():
