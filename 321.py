@@ -37,6 +37,7 @@ class User:
         self.total_price = None
         self.price_print = None
         self.info_user = None
+        self.message_id = None
 
 
 class Markup():
@@ -347,7 +348,7 @@ class Markup():
         time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
         type_pay = 'Наличные'
         name = user.info_user
-        bot.send_message(chat_id,
+        bot.send_message(chat_id=chat_id, message_id=user.message_id
                           text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
         bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
@@ -737,6 +738,7 @@ def callback_query_handler(callback):
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
                 markup = mark_up.gen_markup1(chat_id, total_price=user.total_price)
+                user.message_id = callback.message.message_id
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='❗Внимание❗\nЕсли кол-во страниц '
                                            'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'
@@ -752,10 +754,6 @@ def callback_query_handler(callback):
                                       text='❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
                                  'Поддерживаю форматы:\n\n'
                                  '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
-            if callback.data == 'Канцелярия':
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='Добро пожаловать в канцелярию ..', reply_markup=mark_up.kancel())
-                user.type_print = 'Канцелярия'
             if callback.data == 'назад':
                 dbworker.set_state(str(chat_id), '1')
                 if callback.inline_message_id == None:
