@@ -126,7 +126,7 @@ class Markup():
                                         'targets=Заказ&comment=&origin=form&selectedPaymentType=pc&destination='
                                         'Donate&form-comment=Donate&short-dest=&quickpay-form=shop')
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='корзина')
-        markup.add(a1)
+        markup.add(a2)
         markup.add(a3)
         markup.add(a4)
         return markup
