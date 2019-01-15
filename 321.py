@@ -980,7 +980,7 @@ def Check_Payments():
     print(total_price2)
     if total_price1 == total_price2:
         mark_up.finish_payments(chat_id)
-    return "HTTP 200 OK", 200 OK
+    return "HTTP 200 OK", 200
     
      
 
