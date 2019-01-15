@@ -601,8 +601,12 @@ def callback_query_handler(callback):
             user = user_dict[chat_id]
             num = user.num
             if callback.data == 'удалить позицию':
-                bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Позиция удалена')
-                with shelve.open('itog.py') as db:
+                 if callback.inline_message_id == None:
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Позиция удалена', reply_markup
+                                         =mark_up.inline_markup2())
+                else:
+                    bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Позиция удалена')
+                with shelve.open('user_db.py') as db:
                     del db[str(chat_id) + ':' + user.file_name]
                 mark_up.check_basket(chat_id, callback)
             if callback.data == '+1':
