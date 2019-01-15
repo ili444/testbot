@@ -878,7 +878,7 @@ def callback_query_handler(callback):
                                                f'Итого: {str(user.total_price)} руб.'
                                  )
                 mark_up.clear_basket(chat_id)
-  except KeyError as a:
+    except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
         bot.send_message(chat_id,
