@@ -36,6 +36,7 @@ class User:
         self.num_page = None
         self.total_price = None
         self.price_print = None
+        self.info_user = None
 
 
 class Markup():
@@ -109,12 +110,18 @@ class Markup():
                 del db[dd]
 
 
-    def gen_markup1(self):
+    def gen_markup1(self, chat_id, user.total_price):
         markup = types.InlineKeyboardMarkup(True)
-        markup.row_width = 2
-        markup.add(types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now'),
-                   types.InlineKeyboardButton("По факту получения", callback_data='later'),
-                   types.InlineKeyboardButton("⬅ Назад", callback_data='корзина'))
+        a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now'),
+        a2 = types.InlineKeyboardButton("По факту получения", callback_data='later'),
+        a3 = types.InlineKeyboardButton("Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={user.total_price}&success'
+                                        f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
+                                        'targets=Заказ&comment=&origin=form&selectedPaymentType=pc&destination='
+                                        'Donate&form-comment=Donate&short-dest=&quickpay-form=shop')
+        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='корзина')
+        markup.add(a1, a2)
+        markup.add(a3)
+        markup.add(a4)
         return markup
 
 
@@ -329,6 +336,29 @@ class Markup():
             )
             r.append(d)
         return r
+    
+    def finish_payments(self, chat_id):
+        number = str(mark_up.random_pool())
+        bot.send_message(chat_id, 'Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
+        mark_up.result_ship(chat_id)
+        from_chat_id = -1001302729558
+        now = datetime.now()
+        hours = int(now.hour) + 7
+        time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
+        type_pay = 'Наличные'
+        name = user.info_user
+        bot.send_message(chat_id,
+                          text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
+        bot.send_message(from_chat_id, f'{m}'
+                                   f'___________________________\n\n'
+                                   f'Номер заказа - {number}\n'
+                                   f'Время заказа: {time_order}\n'
+                                   f'Заказчик: {name}\n'
+                                   f'Тип оплаты: {type_pay}\n\n'
+                                   f'Итого: {str(user.total_price)} ₽.'
+                     )
+        mark_up.clear_basket(chat_id)
+    
 
 mark_up = Markup('ok')
 
@@ -413,6 +443,7 @@ def msg_hand(message):
         start = 'ok'
         user = User(start)
         user_dict[chat_id] = user
+        user.info_user = f'{message.from_user.first_name} {message.from_user.last_name} @{message.from_user.username}'
         num = 1
         user.num = num
         if message.text == '📌 Канцелярия':
@@ -705,10 +736,11 @@ def callback_query_handler(callback):
                                                f'💾 {user.file_name}', reply_markup=mark_up.back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
+                markup = mark_up.gen_markup1(chat_id, user.total_price)
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='❗Внимание❗\nЕсли кол-во страниц '
                                            'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'
-                                           'Выберите тип оплаты ..', reply_markup=mark_up.gen_markup1())
+                                           'Выберите тип оплаты ..', reply_markup=markup)
             if callback.data == 'очистить':
                 mark_up.clear_basket(chat_id)
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
@@ -933,17 +965,21 @@ def got_payment(message):
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
-    a = request.get_data()
-    b = request.form
-    c = request.values
-    d = request.args
-    f = request.form['notification_type']
-    print(a, b, c, d, sep='\n')
-    print(f)
-    print('1')
-    #bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
-    return "HTTP 200 OK", 200
+    bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
+    return "OK", 200
 
+@server.route('/' + 'PAYMENTS', methods=['POST'])
+def Check_Payments():
+    chat_id = request.form['label']
+    total_price = request.form['amount']
+    print(total_price
+    print(chat_id)
+    user = user_dict[chat_id]
+    if total_price == user.total_price:
+        mark_up.finish_payment(chat_id)
+        return "HTTP 200 OK", 200
+    else:
+        return "error", 400
 
 @server.route("/")
 def webhook():
