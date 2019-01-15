@@ -971,7 +971,9 @@ def getMessage():
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
     chat_id = request.form['label']
+    print(chat_id)
     total_price = request.form['amount']
+    print(total_price)
     user = user_dict[chat_id]
     if total_price == user.total_price:
         mark_up.finish_payment(chat_id)
