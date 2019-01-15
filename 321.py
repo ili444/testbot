@@ -933,7 +933,7 @@ def got_payment(message):
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
-    a = request.json
+    a = request.get_json()
     print(a)
     print('1')
     #bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
