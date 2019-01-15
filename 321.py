@@ -337,9 +337,8 @@ class Markup():
             r.append(d)
         return r
     
-    def finish_payments(self, chat_id):
+    def finish_payments(self, chat_id, user):
         number = str(mark_up.random_pool())
-        bot.send_message(chat_id, 'Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
         j = mark_up.result_ship(chat_id, 1)
         m = mark_up.result_ship(chat_id, 0)
         from_chat_id = -1001302729558
@@ -979,7 +978,7 @@ def Check_Payments():
     total_price2 = (float(user.total_price) * 0.98)
     print(total_price2)
     if total_price1 == total_price2:
-        mark_up.finish_payments(chat_id)
+        mark_up.finish_payments(chat_id, user)
     return "HTTP 200 OK", 200
     
      
