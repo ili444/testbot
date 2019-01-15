@@ -71,9 +71,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
     def num_copy_markup3(self):
@@ -84,9 +86,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='НазадВканц')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data='корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
 
@@ -98,9 +102,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
     def clear_basket(self, chat_id):
@@ -113,14 +119,14 @@ class Markup():
 
     def gen_markup1(self, chat_id, total_price):
         markup = types.InlineKeyboardMarkup(True)
-        a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now')
-        a2 = types.InlineKeyboardButton("По факту получения", callback_data='later')
-        a3 = types.InlineKeyboardButton("Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
+        #a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now')
+        a2 = types.InlineKeyboardButton("Оплатой при получении", callback_data='later')
+        a3 = types.InlineKeyboardButton("Перевод Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
                                         f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
                                         'targets=Заказ&comment=&origin=form&selectedPaymentType=pc&destination='
                                         'Donate&form-comment=Donate&short-dest=&quickpay-form=shop')
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='корзина')
-        markup.add(a1, a2)
+        markup.add(a1)
         markup.add(a3)
         markup.add(a4)
         return markup
@@ -168,9 +174,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
     def random_pool(self):
@@ -528,12 +536,6 @@ def msg_hand(message):
 
 
 
-
-
-
-
-
-
 @bot.inline_handler(func=lambda query: True)
 def inline_query(query):
     try:
@@ -876,34 +878,7 @@ def callback_query_handler(callback):
                                                f'Итого: {str(user.total_price)} руб.'
                                  )
                 mark_up.clear_basket(chat_id)
-            if callback.data == "now":
-                bot.answer_callback_query(callback.id, "Вы выбрали - Cейчас в Telegram")
-                price = str(user.total_price)
-                price1 = user.total_price * 100
-                prices = [LabeledPrice(label=f'Стоимость услуги: ', amount=int(price1))]
-                title = 'Заказ'
-                if price1 > 6569.0:
-                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:5508',
-                                     start_parameter='true',
-                                     title=title,
-                                     description=f'Цена {price} ₽',
-                                     invoice_payload='test',
-                                     currency='RUB',
-                                     prices=prices,
-                                     need_phone_number=True,
-                                     photo_url='https://pp.userapi.com/c845218/v845218058/cd929/DMHxsJvNO6s.jpg',
-                                     photo_height=512,
-                                     photo_width=512,
-                                     photo_size=512,
-                                     )
-
-                else:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                          text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
-                                               f'Сумма вашего заказа: {price} ₽\n'
-                                               f'Однако Вы можете оплатить заказ по факту получения',
-                                                reply_markup=mark_up.gen_markup2())
-    except KeyError as a:
+  except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
         bot.send_message(chat_id,
@@ -921,7 +896,7 @@ def callback_query_handler(callback):
 
 
 
-
+"""
 @bot.shipping_query_handler(func=lambda query: True)
 def shipping(shipping_query):
     bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=False,
@@ -959,7 +934,7 @@ def got_payment(message):
                                    f'Итого: {str(user.total_price)} ₽.'
                      )
     mark_up.clear_basket(chat_id)
-
+"""
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
@@ -970,11 +945,8 @@ def getMessage():
 def Check_Payments():
     chat_id = int(request.form['label'])
     user = user_dict[chat_id]
-    print(chat_id)
     total_price1 = float(request.form['amount'])
-    print(total_price1)
     total_price2 = (float(user.total_price) * 0.98)
-    print(total_price2)
     if total_price1 == total_price2:
         mark_up.finish_payments(chat_id, user)
     return "HTTP 200 OK", 200
