@@ -348,7 +348,7 @@ class Markup():
         time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
         type_pay = 'Наличные'
         name = user.info_user
-        bot.send_message(chat_id=chat_id, message_id=user.message_id
+        bot.edit_message_text(chat_id=chat_id, message_id=user.message_id
                           text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
         bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
