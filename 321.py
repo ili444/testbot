@@ -123,7 +123,7 @@ class Markup():
         a2 = types.InlineKeyboardButton("Оплатой при получении", callback_data='later')
         a3 = types.InlineKeyboardButton("Перевод Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
                                         f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
-                                        'targets=Заказ&comment=&origin=form&selectedPaymentType=pc&destination='
+                                        'targets=Копир-коту&comment=&origin=form&selectedPaymentType=pc&destination='
                                         'Donate&form-comment=Donate&short-dest=&quickpay-form=shop')
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='корзина')
         markup.add(a2)
@@ -367,6 +367,23 @@ class Markup():
                                    f'Итого: {str(user.total_price)} ₽.'
                      )
         mark_up.clear_basket(chat_id)
+        
+    def pechat(a, price_print, callback):
+                price_print = 2.5
+                mark_up.callduty(price_print, callback)
+                num = user.num
+                if num != 1:
+                    markup = mark_up.num_copy_markup2(callback, num)
+                else:
+                    markup = mark_up.num_copy_markup1()
+                if callback.inline_message_id == None:
+                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                      text='📌 {a} - {price_print} руб/стр.\n\n'
+                                      'Выберите кол-во копий:', reply_markup=markup)
+                else:
+                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
+                                          text='📌 {a} - {price_print} руб/стр.\n\n'
+                                      'Выберите кол-во копий:', reply_markup=markup)
     
 
 mark_up = Markup('ok')
@@ -747,7 +764,7 @@ def callback_query_handler(callback):
                 user.message_id = callback.message.message_id
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='❗Внимание❗\nЕсли кол-во страниц '
-                                           'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'
+                                           'не совпадает с действительностью, то рекомендуется выбрать "Оплата при получении"\n\n'
                                            'Выберите тип оплаты ..', reply_markup=markup)
             if callback.data == 'очистить':
                 mark_up.clear_basket(chat_id)
@@ -777,55 +794,11 @@ def callback_query_handler(callback):
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
                                           text='Хорошо, выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Ч/Б Печать(распечатка)':
-                price_print = 2.5
-                mark_up.callduty(price_print, callback)
-                num = user.num
-                if num != 1:
-                    markup = mark_up.num_copy_markup2(callback, num)
-                else:
-                    markup = mark_up.num_copy_markup1()
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n'
-                                      'Выберите кол-во копий:', reply_markup=markup)
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text='📌 Ч/Б копии/распечатка А4 - 2,5 руб/стр.\n\n'
-                                               'Выберите кол-во копий:', reply_markup=markup)
+                pechat(a='Ч/Б копии/распечатка А4', price_print=2.5, callback)
             if callback.data == 'Печать фото 10х15':
-                price_print = 10.0
-                mark_up.callduty(price_print, callback)
-                num = user.num
-                if num != 1:
-                    markup = mark_up.num_copy_markup2(callback, num)
-                else:
-                    markup = mark_up.num_copy_markup1()
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                      text=
-                                           '📌 Печать фото 10х15 - 10 руб/фото.\n\n'
-                                           'Выберите кол-во копий:', reply_markup=markup)
-                else:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                          text=
-                                          '📌 Печать фото 10х15 - 10 руб/фото.\n\n'
-                                          'Выберите кол-во копий:', reply_markup=markup)
+                pechat(a='Печать фото 10х15', price_print=10.0, callback)
             if callback.data == 'Цветная печать А4':
-                price_print = 20.0
-                mark_up.callduty(price_print, callback)
-                num = user.num
-                if num != 1:
-                    markup = mark_up.num_copy_markup2(callback, num)
-                else:
-                    markup = mark_up.num_copy_markup1()
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text='📌 Цветная распечатка А4 - 20 руб/стр.\n\n'
-                                           'Выберите кол-во копий:', reply_markup=markup)
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text='📌 Цветная распечатка А4 - 20 руб/стр.\n\n'
-                                               'Выберите кол-во копий:', reply_markup=markup)
+                pechat(a='Цветная распечатка А4', price_print=20.0, callback)
             if callback.data == 'А4 Ч/Б двусторонняя':
                 price_print = 2.0
                 mark_up.callduty(price_print, callback)
@@ -843,23 +816,7 @@ def callback_query_handler(callback):
                                           text='📌 А4 Ч/Б двусторонняя - 4 руб/стр.\n\n'
                                                'Выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Печать на фотобумаге':
-                price_print = 30.0
-                mark_up.callduty(price_print, callback)
-                num = user.num
-                if num != 1:
-                    markup = mark_up.num_copy_markup2(callback, num)
-                else:
-                    markup = mark_up.num_copy_markup1()
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=
-                                           '📌 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.\n\n'
-                                           'Выберите кол-во копий:', reply_markup=markup)
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text=
-                                          '📌 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.\n\n'
-                                          'Выберите кол-во копий:', reply_markup=markup)
+                pechat(a='Печать на фотобумаге А4 (глянец, матовая)', price_print=30.0, callback)
             if callback.data == "later":
                 number = f'{mark_up.random_pool()}'
                 bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
