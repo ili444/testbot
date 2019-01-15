@@ -112,8 +112,8 @@ class Markup():
 
     def gen_markup1(self, chat_id, total_price):
         markup = types.InlineKeyboardMarkup(True)
-        a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now'),
-        a2 = types.InlineKeyboardButton("По факту получения", callback_data='later'),
+        a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now')
+        a2 = types.InlineKeyboardButton("По факту получения", callback_data='later')
         a3 = types.InlineKeyboardButton("Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
                                         f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
                                         'targets=Заказ&comment=&origin=form&selectedPaymentType=pc&destination='
