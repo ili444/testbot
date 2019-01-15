@@ -971,6 +971,8 @@ def getMessage():
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
     chat_id = int(request.form['label'])
+    if chat_id == '':
+        chat_id = 481077652
     print(chat_id)
     total_price = request.form['amount']
     print(total_price)
