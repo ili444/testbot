@@ -970,13 +970,17 @@ def getMessage():
 
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
-    chat_id = request.form['label']
-    if chat_id == '':
-        chat_id = 481077652
+    chat_id = int(request.form['label'])
+    user = user_dict[chat_id]
     print(chat_id)
-    total_price = request.form['amount']
-    print(total_price)
-    bot.send_message(chat_id, f'платеж на сумму {total_price} проведен')
+    total_price1 = request.form['amount']
+    print(total_price1)
+    total_price2 = (float(user.total_price) * 0.98)
+    print(total_price2)
+    if total_price1 == total_price2:
+        mark_up.finish_payments(chat_id)
+    else:
+        bot.send_message(chat_id, 'сумма заказа не соотвествует платежу'
     return "HTTP 200 OK", 200
     
      
