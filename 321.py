@@ -601,7 +601,7 @@ def callback_query_handler(callback):
             user = user_dict[chat_id]
             num = user.num
             if callback.data == 'удалить позицию':
-                 if callback.inline_message_id == None:
+                if callback.inline_message_id == None:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Позиция удалена', reply_markup
                                          =mark_up.inline_markup2())
                 else:
