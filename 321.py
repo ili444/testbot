@@ -110,7 +110,7 @@ class Markup():
                 del db[dd]
 
 
-    def gen_markup1(self, chat_id, user.total_price):
+    def gen_markup1(self, chat_id, total_price):
         markup = types.InlineKeyboardMarkup(True)
         a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now'),
         a2 = types.InlineKeyboardButton("По факту получения", callback_data='later'),
@@ -736,7 +736,7 @@ def callback_query_handler(callback):
                                                f'💾 {user.file_name}', reply_markup=mark_up.back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
-                markup = mark_up.gen_markup1(chat_id, user.total_price)
+                markup = mark_up.gen_markup1(chat_id, total_price=user.total_price)
                 bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='❗Внимание❗\nЕсли кол-во страниц '
                                            'не совпадает с действительностью, то рекомендуется выбрать "По факту получения"\n\n'
