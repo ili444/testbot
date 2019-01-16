@@ -381,11 +381,11 @@ class Markup():
                     markup = mark_up.num_copy_markup1()
                 if callback.inline_message_id == None:
                     bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=f'📌 {a} - {price_print} руб/стр.\n\n'
+                                      text=f'📌 {a} - {str(price_print)} руб/стр.\n\n'
                                       'Выберите кол-во копий:', reply_markup=markup)
                 else:
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text=f'📌 {a} - {price_print} руб/стр.\n\n'
+                                          text=f'📌 {a} - {str(price_print)} руб/стр.\n\n'
                                       'Выберите кол-во копий:', reply_markup=markup)
     
 
