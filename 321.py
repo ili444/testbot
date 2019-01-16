@@ -391,7 +391,7 @@ class Markup():
                     
     def forward(self):
         markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("Поделиться", switch_inline_query='https://t.me/copykotbot')
+        markup.add(types.InlineKeyboardButton("Поделиться", switch_inline_query='https://t.me/copykotbot'))
         return markup
         
     
