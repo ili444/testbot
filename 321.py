@@ -354,10 +354,12 @@ class Markup():
         now = datetime.now()
         hours = int(now.hour) + 7
         time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
-        type_pay = 'Наличные'
+        type_pay = 'Перевод Яндекс.Деньги'
         name = user.info_user
         bot.edit_message_text(chat_id=chat_id, message_id=user.message_id,
-                          text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
+                          text=f'Супер! Платёж на сумму {str(user.total_price)} получен!✔\nТеперь ваш заказ отправлен Копир-кот!✔\n'
+                           f'\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
+                           f'Номер вашего заказа - {number}')
         bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
                                    f'Номер заказа - {number}\n'
@@ -371,7 +373,6 @@ class Markup():
     def pechat(a, price_print, callback):
                 chat_id = callback.from_user.id
                 user = user_dict[chat_id]
-                price_print = 2.5
                 mark_up.callduty(price_print, callback)
                 num = user.num
                 if num != 1:
@@ -796,11 +797,14 @@ def callback_query_handler(callback):
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
                                           text='Хорошо, выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Ч/Б Печать(распечатка)':
-                mark_up.pechat(a='Ч/Б копии/распечатка А4', price_print=2.5, callback=callback)
+                a='Ч/Б копии/распечатка А4'
+                mark_up.pechat(a, 2.5, callback)
             if callback.data == 'Печать фото 10х15':
-                mark_up.pechat(a='Печать фото 10х15', price_print=10.0, callback=callback)
+                a='Печать фото 10х15'
+                mark_up.pechat(a, 10.0, callback)
             if callback.data == 'Цветная печать А4':
-                mark_up.pechat(a='Цветная распечатка А4', price_print=20.0, callback=callback)
+                a = 'Цветная распечатка А4'
+                mark_up.pechat(a, 20.0, callback)
             if callback.data == 'А4 Ч/Б двусторонняя':
                 price_print = 2.0
                 mark_up.callduty(price_print, callback)
@@ -818,7 +822,8 @@ def callback_query_handler(callback):
                                           text='📌 А4 Ч/Б двусторонняя - 4 руб/стр.\n\n'
                                                'Выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Печать на фотобумаге':
-                mark_up.pechat(a='Печать на фотобумаге А4 (глянец, матовая)', price_print=30.0, callback=callback)
+                a='Печать на фотобумаге А4 (глянец, матовая)'
+                mark_up.pechat(a, 30.0, callback)
             if callback.data == "later":
                 number = f'{mark_up.random_pool()}'
                 bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
@@ -831,7 +836,9 @@ def callback_query_handler(callback):
                 type_pay = 'По факту получения'
                 name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
+                                      text=f'Супер!✔\nТеперь ваш заказ на сумму {str(user.total_price)} отправлен Копир-коту!'
+                        f'✔\n\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
+                        f'Номер вашего заказа - {number}')
                 bot.send_message(from_chat_id, f'{m}'
                                                f'______________________________\n\n'
                                                f'Номер заказа - {number}\n'
