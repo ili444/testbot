@@ -120,7 +120,7 @@ class Markup():
     def gen_markup1(self, chat_id, total_price):
         markup = types.InlineKeyboardMarkup(True)
         #a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now')
-        a2 = types.InlineKeyboardButton("Оплатой при получении", callback_data='later')
+        a2 = types.InlineKeyboardButton("Оплатa при получении", callback_data='later')
         a3 = types.InlineKeyboardButton("Перевод Яндекс.Деньги", url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
                                         f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
                                         'targets=Копир-коту&comment=&origin=form&selectedPaymentType=pc&destination='
@@ -359,7 +359,7 @@ class Markup():
         bot.edit_message_text(chat_id=chat_id, message_id=user.message_id,
                           text=f'Супер! Платёж на сумму {str(user.total_price)} получен!✔\nТеперь ваш заказ отправлен Копир-кот!✔\n'
                            f'\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
-                           f'Номер вашего заказа - {number}')
+                           f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
         bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
                                    f'Номер заказа - {number}\n'
@@ -388,6 +388,12 @@ class Markup():
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
                                           text=f'📌 {a} - {str(price_print)} руб/стр.\n\n'
                                       'Выберите кол-во копий:', reply_markup=markup)
+                    
+    def forward(self):
+        markup = types.InlineKeyboardMarkup(True)
+        markup.add(types.InlineKeyboardButton("Поделиться", switch_inline_query='https://t.me/copykotbot')
+        return markup
+        
     
 
 mark_up = Markup('ok')
@@ -482,6 +488,8 @@ def msg_hand(message):
         if message.text == '📲 Обратная связь':
             bot.send_contact(chat_id, phone_number=89039206886, first_name='Екатерина')
             bot.send_location(chat_id, 56.012386, 92.8707427)
+            bot.send_message(chat_id, 'Адрес: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n'
+                                       'Пн - Сб 10:00 - 19:00\nВс - выходной')
         if message.content_type == 'photo':
             file_id = (message.json).get('photo')[0].get('file_id')
             user.file_id = file_id
@@ -835,7 +843,7 @@ def callback_query_handler(callback):
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
                                       text=f'Супер!✔\nТеперь ваш заказ на сумму {str(user.total_price)} отправлен Копир-коту!'
                         f'✔\n\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
-                        f'Номер вашего заказа - {number}')
+                        f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
                 bot.send_message(from_chat_id, f'{m}'
                                                f'______________________________\n\n'
                                                f'Номер заказа - {number}\n'
