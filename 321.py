@@ -375,7 +375,6 @@ class Markup():
                 user = user_dict[chat_id]
                 mark_up.callduty(price_print, callback)
                 num = user.num
-                print(num)
                 if num != 1:
                     markup = mark_up.num_copy_markup2(callback, num)
                 else:
