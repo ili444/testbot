@@ -373,8 +373,9 @@ class Markup():
     def pechat(a, price_print, callback):
                 chat_id = callback.from_user.id
                 user = user_dict[chat_id]
-                mark_up.callduty(price_print, callback)
+                mark_up.callduty(float(price_print), callback)
                 num = user.num
+                print(num)
                 if num != 1:
                     markup = mark_up.num_copy_markup2(callback, num)
                 else:
@@ -798,15 +799,15 @@ def callback_query_handler(callback):
                                           text='Хорошо, выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Ч/Б Печать(распечатка)':
                 a = 'Ч/Б копии/распечатка А4'
-                price_print = 2.5
+                price_print = '2.5'
                 mark_up.pechat(a, price_print, callback)
             if callback.data == 'Печать фото 10х15':
                 a = 'Печать фото 10х15'
-                price_print = 10.0
+                price_print = '10.0'
                 mark_up.pechat(a, price_print, callback)
             if callback.data == 'Цветная печать А4':
                 a = 'Цветная распечатка А4'
-                price_print = 20.0
+                price_print = '20.0'
                 mark_up.pechat(a, price_print, callback)
             if callback.data == 'А4 Ч/Б двусторонняя':
                 price_print = 2.0
@@ -826,7 +827,7 @@ def callback_query_handler(callback):
                                                'Выберите кол-во копий:', reply_markup=markup)
             if callback.data == 'Печать на фотобумаге':
                 a = 'Печать на фотобумаге А4 (глянец, матовая)'
-                price_print = 30.0
+                price_print = '30.0'
                 mark_up.pechat(a, price_print, callback)
             if callback.data == "later":
                 number = f'{mark_up.random_pool()}'
