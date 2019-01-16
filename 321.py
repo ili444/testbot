@@ -208,10 +208,10 @@ class Markup():
                     s.append(float(lin))
                     l.append(line2)
                 total_price = sum(s)
-                m = ' ₽\n\n💾 '.join(l)
+                m = ' ₽\n\n➕ '.join(l)
                 user.total_price = total_price
                 bot.send_message(chat_id, 'Ваша корзина :\n\n'
-                                          f'💾 {m} ₽.\n\n'
+                                          f'➕ {m} ₽.\n\n'
                                           f'Итого: {str(total_price)}  ₽.', reply_markup=mark_up.gen_markup2())
 
     def result_ship(self, chat_id, int):
@@ -230,7 +230,7 @@ class Markup():
                 l.append(line2)
                 t.append(line1)
             m = '\n'.join(l)
-            j = ' ₽\n\n💾 '.join(t)
+            j = ' ₽\n\n➕ '.join(t)
             if int == 1:
                 return j
             else:
@@ -304,9 +304,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
     def plus_kanc(self, callback, num):
@@ -317,9 +319,11 @@ class Markup():
         a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='НазадВканц')
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data='корзина')
         a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
+        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
+        markup.add(a7)
         return markup
 
     def add_knopka(self, id, thumb_url, title, price):
@@ -357,8 +361,8 @@ class Markup():
         type_pay = 'Перевод Яндекс.Деньги'
         name = user.info_user
         bot.edit_message_text(chat_id=chat_id, message_id=user.message_id,
-                          text=f'Супер! Платёж на сумму {str(user.total_price)} получен!✔\nТеперь ваш заказ отправлен Копир-кот!✔\n'
-                           f'\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
+                          text=f'Супер! Платёж на сумму {str(user.total_price)} ₽ получен!✔\nТеперь ваш заказ отправлен Копир-кот!\n'
+                           f'\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
                            f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
         bot.send_message(from_chat_id, f'{m}'
                                    f'___________________________\n\n'
@@ -369,6 +373,8 @@ class Markup():
                                    f'Итого: {str(user.total_price)} ₽.'
                      )
         mark_up.clear_basket(chat_id)
+        
+        
         
     def pechat(self, a, price_print, callback):
                 chat_id = callback.from_user.id
@@ -390,7 +396,7 @@ class Markup():
                     
     def forward(self):
         markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("Поделиться", switch_inline_query='https://t.me/copykotbot'))
+        markup.add(types.InlineKeyboardButton("Поделиться", url='https://t.me/share/url?url=https%3A//t.me/copykotbot'))
         return markup
         
     
@@ -747,28 +753,28 @@ def callback_query_handler(callback):
                         s.append(float(lin))
                         l.append(line2)
                     total_price = sum(s)
-                m = ' ₽\n\n💾 '.join(l)
+                m = ' ₽\n\n➕ '.join(l)
                 user.total_price = total_price
                 if callback.inline_message_id == None:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
-                                                                                                    f'💾 {m} ₽.\n\n'
+                                                                                                    f'➕ {m} ₽.\n\n'
                                                                                                     f'Итого: {str(total_price)}  ₽.',
                                       reply_markup=mark_up.gen_markup2())
                 else:
                     bot.send_message(chat_id,
                                           text='Ваша корзина :\n\n'
-                                               f'💾 {m} ₽.\n\n'
+                                               f'➕ {m} ₽.\n\n'
                                                f'Итого: {str(total_price)}  ₽.',
                                           reply_markup=mark_up.gen_markup2())
             if callback.data == 'примечания':
                 if callback.inline_message_id == None:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
-                                           f'💾 {user.file_name}', reply_markup=mark_up.back())
+                                           f'➕ {user.file_name}', reply_markup=mark_up.back())
                 else:
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
                                           text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
-                                               f'💾 {user.file_name}', reply_markup=mark_up.back())
+                                               f'➕ {user.file_name}', reply_markup=mark_up.back())
                 dbworker.set_state(str(chat_id), '2')
             if callback.data == 'оформить':
                 markup = mark_up.gen_markup1(chat_id, total_price=user.total_price)
@@ -840,8 +846,8 @@ def callback_query_handler(callback):
                 type_pay = 'По факту получения'
                 name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=f'Супер!✔\nТеперь ваш заказ на сумму {str(user.total_price)} отправлен Копир-коту!'
-                        f'✔\n\n💾 {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
+                                      text=f'Супер!✔\nТеперь ваш заказ на сумму {str(user.total_price)} ₽ отправлен Копир-коту!'
+                        f'✔\n\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
                         f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
                 bot.send_message(from_chat_id, f'{m}'
                                                f'______________________________\n\n'
@@ -917,13 +923,17 @@ def getMessage():
 
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
-    chat_id = int(request.form['label'])
-    user = user_dict[chat_id]
-    total_price1 = float(request.form['amount'])
-    total_price2 = (float(user.total_price) * 0.98)
-    if total_price1 == total_price2:
-        mark_up.finish_payments(chat_id, user)
-    return "HTTP 200 OK", 200
+    try:
+        chat_id = int(request.form['label'])
+        user = user_dict[chat_id]
+        total_price1 = float(request.form['amount'])
+        total_price2 = (float(user.total_price) * 0.98)
+        if total_price1 == total_price2:
+            mark_up.finish_payments(chat_id, user)
+        return "HTTP 200 OK", 200
+    except Exception as e:
+        print(e)
+    
     
      
 
