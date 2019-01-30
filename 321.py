@@ -223,7 +223,7 @@ class Markup():
                 a = db.get(dd)
                 r.append(a)
             for line3 in r:
-                file_id = (line3[5])[2:-2]
+                file_id = (line3[7])[2:-2]
                 print(file_id)
                 if file_id == 'None':
                     pass
@@ -240,13 +240,15 @@ class Markup():
         price_print = mark_up.call_value(chat_id, 'price_print')
         link = mark_up.call_value(chat_id, 'link')
         apps = mark_up.call_value(chat_id, 'apps')
+        file_id = mark_up.call_value(chat_id, 'file_id')
         with shelve.open('itog.py') as db:
             db[str(chat_id) + ':' + file_name] = [file_name, f' ({type_print}) ',
                                                        (str(num) + ' экз.'),
                                                        (str(num_page) + ' стр.'),
                                                        (str(num_page * num * price_print)),
                                                        ('\n\n' + str(link) + '\n\n'),
-                                                       ('Прим.\n' + str(apps) + '\n\n')]
+                                                       ('Прим.\n' + str(apps) + '\n\n'),
+                                                        str(file_id)]
 
     def add_kancel(self, callback):
         chat_id = callback.from_user.id
@@ -256,12 +258,14 @@ class Markup():
         price_print = mark_up.call_value(chat_id, 'price_print')
         link = mark_up.call_value(chat_id, 'link')
         apps = mark_up.call_value(chat_id, 'apps')
+        file_id = mark_up.call_value(chat_id, 'file_id')
         with shelve.open('itog.py') as db:
             db[str(chat_id) + ':' + file_name] = [file_name, f'{type_print}', (str(num) + ' экз.'),
                                                        ' - ',
                                                        (str(num * price_print)),
                                                        ('\n\n' + str(link) + '\n\n'),
-                                                       ('Прим.\n' + str(apps) + '\n\n')]
+                                                       ('Прим.\n' + str(apps) + '\n\n'),
+                                                           str(file_id)]
 
     def callduty(self, price_print, callback):
         chat_id = callback.from_user.id
