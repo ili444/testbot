@@ -207,7 +207,7 @@ class Markup():
                 line2 = ' '.join(line3[:6])
                 l.append(line2)
                 t.append(line1)
-            m = '++++++++++++++++++++++++++++++++++++++\n'.join(l)
+            m = '+++++++++++++++++++++++++++++++++++++++++++++\n\n'.join(l)
             j = ' ₽\n\n➕ '.join(t)
             if int == 1:
                 return j
@@ -360,7 +360,7 @@ class Markup():
         return r
 
     def finish_payments(self, chat_id):
-        number = str(mark_up.random_pool())
+        number = f'{str(chat_id)}-{mark_up.random_pool()}'
         j = mark_up.result_ship(chat_id, 1)
         m = mark_up.result_ship(chat_id, 0)
         from_chat_id = -1001302729558
@@ -371,7 +371,7 @@ class Markup():
         name = mark_up.call_value(chat_id, 'info_user')
         total_price = mark_up.call_value(chat_id, 'total_user')
         bot.edit_message_text(chat_id=chat_id, message_id=mark_up.call_value(chat_id, 'message_id'),
-                              text=f'Супер! Платёж на сумму {str(total_price)} ₽ получен!✔\nТеперь ваш заказ отправлен Копир-кот!\n'
+                              text=f'Супер! Платёж на сумму {str(total_price)} ₽ получен!✅\nТеперь ваш заказ отправлен Копир-кот!✅\n'
                                    f'\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
                                    f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
         bot.send_message(from_chat_id, f'{m}'
@@ -874,8 +874,8 @@ def callback_query_handler(callback):
                 name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
                 total_price = mark_up.call_value(chat_id, 'total_price')
                 bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=f'Супер!✔\nТеперь ваш заказ на сумму {str(total_price)} ₽ отправлен Копир-коту!'
-                                           f'✔\n\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
+                                      text=f'Супер!✅\nТеперь ваш заказ на сумму {str(total_price)} ₽ отправлен Копир-коту!'
+                                           f'✅\n\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
                                            f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
                 bot.send_message(from_chat_id, f'{m}'
                                                f'_________________________________________\n\n'
