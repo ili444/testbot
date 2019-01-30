@@ -223,7 +223,7 @@ class Markup():
                 a = db.get(dd)
                 r.append(a)
             for line3 in r:
-                file_id = (line3[7])[2:-2]
+                file_id = line3[7]
                 print(file_id)
                 if file_id == 'None':
                     pass
