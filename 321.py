@@ -228,7 +228,7 @@ class Markup():
                 if file_id == 'None':
                     pass
                 else:
-                    bot.send_document(-1001302729558, str(file_id), caption=f'{str(chat_id}-{number}')
+                    bot.send_document(-1001302729558, str(file_id), caption=f'{str(chat_id)}-{number}')
 
 
     def gg_basket(self, callback):
