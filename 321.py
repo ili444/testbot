@@ -207,7 +207,7 @@ class Markup():
                 line2 = ' '.join(line3[:6])
                 l.append(line2)
                 t.append(line1)
-            m = '\n'.join(l)
+            m = '++++++++++++++++++++++++++++++++++++++\n'.join(l)
             j = ' ₽\n\n➕ '.join(t)
             if int == 1:
                 return j
@@ -228,7 +228,7 @@ class Markup():
                 if file_id == 'None':
                     pass
                 else:
-                    bot.send_document(-1001302729558, str(file_id), caption=f'{str(chat_id)}-{number}')
+                    bot.send_document(-1001302729558, str(file_id), caption=f'{number}')
 
 
     def gg_basket(self, callback):
@@ -256,8 +256,10 @@ class Markup():
         type_print = mark_up.call_value(chat_id, 'type_print')
         num = mark_up.call_value(chat_id, 'num')
         price_print = mark_up.call_value(chat_id, 'price_print')
+        mark_up.update_key(chat_id, 'link', 'None')
         link = mark_up.call_value(chat_id, 'link')
         apps = mark_up.call_value(chat_id, 'apps')
+        mark_up.update_key(chat_id, 'file_id', 'None')
         file_id = mark_up.call_value(chat_id, 'file_id')
         with shelve.open('itog.py') as db:
             db[str(chat_id) + ':' + file_name] = [file_name, f'{type_print}', (str(num) + ' экз.'),
@@ -876,7 +878,7 @@ def callback_query_handler(callback):
                                            f'✔\n\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
                                            f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
                 bot.send_message(from_chat_id, f'{m}'
-                                               f'______________________________\n\n'
+                                               f'_________________________________________\n\n'
                                                f'Номер заказа - {number}\n'
                                                f'Время заказа: {time_order}\n'
                                                f'Заказчик: {name}\n'
@@ -884,6 +886,7 @@ def callback_query_handler(callback):
                                                f'Итого: {str(total_price)} руб.'
                                  )
                 mark_up.forward_file(chat_id, number)
+                mark_up.clear_basket(chat_id)
     except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
