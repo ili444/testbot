@@ -1,19 +1,24 @@
 
 dict2 = {
 'corection': {1: {'id': '1',
-                     'thumb_url': 'https://telegra.ph/file/3cb9be4a0ebf2279c078c.jpg',
+                     'thumb_url': 'https://goo.gl/images/jSK3Aa',
                      'title': 'Корректор лента',
-                     'price': '32',
+                     'price': '43',
                      },
                 2:  {'id': '2',
-                      'thumb_url' : 'https://telegra.ph/file/b29995dedc1009898a204.jpg',
+                      'thumb_url' : 'https://goo.gl/images/zgTSzc',
                      'title': 'Корректор карандаш',
-                     'price':'53',
+                     'price':'48',
                      },
                  3: {'id': '3',
-                    'thumb_url': 'https://telegra.ph/file/cfd3eb28413a8c1e25d21.jpg',
+                    'thumb_url': 'https://goo.gl/images/4gDzf2',
                     'title': 'Корректирующая жидкость',
                     'price': '44',
+                    },
+              4: {'id': '4',
+                    'thumb_url': 'https://goo.gl/images/ByhAKk',
+                    'title': 'Мини-корректор карандаш',
+                    'price': '25',
                     }
                 },
  'files': {1: {'id': '1',
@@ -71,11 +76,11 @@ dict_price = {
 'Ручка черная гелевая': 21.0,
 'Ручка черная шариковая автомат': 18.0,
 'Карандаш чернографитный, с резинкой': 6.0,
-'Корректор лента': 32.0,
-'Корректор карандаш': 53.0,
-'Корректирующая жидкость': 44.0
+'Корректор лента': 43.0,
+'Корректор карандаш': 48.0,
+'Корректирующая жидкость': 44.0,
+'Мини-корректор карандаш': 25.0,
 }
-
 
 
 
