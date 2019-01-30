@@ -204,7 +204,7 @@ class Markup():
                 r.append(a)
             for line3 in r:
                 line1 = ' '.join(line3[:5])
-                line2 = ' '.join(line3)
+                line2 = ' '.join(line3[:6])
                 l.append(line2)
                 t.append(line1)
             m = '\n'.join(l)
@@ -214,7 +214,7 @@ class Markup():
             else:
                 return m
 
-    def forward_file(self, chat_id):
+    def forward_file(self, chat_id, number):
         with shelve.open('itog.py') as db:
             r = []
             lst3 = list(db.keys())
@@ -228,7 +228,7 @@ class Markup():
                 if file_id == 'None':
                     pass
                 else:
-                    bot.send_document(-1001302729558, str(file_id))
+                    bot.send_document(-1001302729558, str(file_id), caption=f'{str(chat_id}-{number}')
 
 
     def gg_basket(self, callback):
@@ -401,7 +401,7 @@ class Markup():
 
     def forward(self):
         markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("Поделиться", url='https://t.me/share/url?url=https%3A//t.me/copykotbot'))
+        markup.add(types.InlineKeyboardButton("Поделиться ссылкой на бота", url='https://t.me/share/url?url=https%3A//t.me/copykotbot'))
         return markup
 
     def update_key(self, chat_id, key, value):
@@ -860,7 +860,7 @@ def callback_query_handler(callback):
             if callback.data == 'Печать на фотобумаге':
                 mark_up.pechat(a='Печать на фотобумаге А4 (глянец, матовая)', price_print=30.0, callback=callback)
             if callback.data == "later":
-                number = f'{mark_up.random_pool()}'
+                number = f'{str(chat_id)}-{mark_up.random_pool()}'
                 bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
                 j = mark_up.result_ship(chat_id, 1)
                 m = mark_up.result_ship(chat_id, 0)
@@ -883,7 +883,7 @@ def callback_query_handler(callback):
                                                f'Тип оплаты: {type_pay}\n\n'
                                                f'Итого: {str(total_price)} руб.'
                                  )
-                mark_up.forward_file(chat_id)
+                mark_up.forward_file(chat_id, number)
     except KeyError as a:
         print(a)
         chat_id = callback.from_user.id
