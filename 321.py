@@ -223,8 +223,12 @@ class Markup():
                 a = db.get(dd)
                 r.append(a)
             for line3 in r:
-                file_id = line3[5]
-                bot.send_document(chat_id, file_id)
+                file_id = (line3[5])[2:-2]
+                print(file_id)
+                if file_id == 'None':
+                    pass
+                else:
+                    bot.send_document(chat_id, str(file_id))
 
 
     def gg_basket(self, callback):
@@ -349,7 +353,7 @@ class Markup():
             r.append(d)
         return r
 
-    def finish_payments(self, chat_id, user):
+    def finish_payments(self, chat_id):
         number = str(mark_up.random_pool())
         j = mark_up.result_ship(chat_id, 1)
         m = mark_up.result_ship(chat_id, 0)
@@ -476,6 +480,7 @@ def msg_apps(message):
                     mark_up.update_key(chat_id, 'link', link[2:-2])
                     mark_up.update_key(chat_id, 'type_print', a[1])
                     mark_up.update_key(chat_id, 'num', int(num[0]))
+                    mark_up.update_key(chat_id, 'link', 'None')
                 else:
                     pass
         dbworker.set_state(str(chat_id), '1')
@@ -939,11 +944,10 @@ def getMessage():
 def Check_Payments():
     try:
         chat_id = int(request.form['label'])
-        user = user_dict[chat_id]
         total_price1 = float(request.form['amount'])
-        total_price2 = (float(user.total_price) * 0.98)
+        total_price2 = (float(mark_up.call_value(chat_id, 'total_price')) * 0.98)
         if total_price1 == total_price2:
-            mark_up.finish_payments(chat_id, user)
+            mark_up.finish_payments(chat_id)
         return "HTTP 200 OK", 200
     except Exception as e:
         print(e)
