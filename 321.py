@@ -13,9 +13,11 @@ from telebot import types
 from telebot import apihelper
 from db_users import Db_users
 import json
-TOKEN = 
+from flask import Flask, request
 
+TOKEN = os.environ['token']
 bot = telebot.TeleBot(TOKEN)
+server = Flask(__name__)
 basket = 'basket.py'
 
 
