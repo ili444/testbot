@@ -7,15 +7,15 @@ import datetime
 from datetime import datetime
 import random
 from cofe_lots import dict2, dict_dobavki
-
+import os
 from telebot.types import LabeledPrice
 from telebot import types
 from telebot import apihelper
 from db_users import Db_users
 import json
+TOKEN = 
 
-bot = telebot.TeleBot('696434286:AAEvYkaBQ0rhK-D83sWXDOW0wahkTBGTvLI')
-apihelper.proxy = {'https': 'socks5://481077652:1111@deimos.public.opennetwork.cc:1090'}
+bot = telebot.TeleBot(TOKEN)
 basket = 'basket.py'
 
 
