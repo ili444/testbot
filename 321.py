@@ -621,7 +621,7 @@ def callback_inline(callback):
                 if price1 > 6569.0:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text=f"Вы перешли к оплате заказа")
-                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:7231',
+                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:8408',
                                      start_parameter='true',
                                      title=title,
                                      description=f'✅ {string}',
