@@ -15,7 +15,7 @@ from db_users import Db_users
 import json
 from flask import Flask, request
 
-#TOKEN = os.environ['token']
+TOKEN = os.environ['token']
 bot = telebot.TeleBot(TOKEN)
 server = Flask(__name__)
 basket = 'basket.py'
@@ -41,7 +41,7 @@ class Markup():
         with shelve.open('user_db.py') as db:
             db[str(chat_id)] = {'name_lot': 'None', 'num': 'None', 'price': 'None', 'total_price': 'None',
                                 'pic': 'None', 'number_ship': 'None',
-                                'time': 'None', 'dobavka': ' ', 'koment': 'None', 'info_user': 'None',
+                                'time': 'Ближайщее время', 'dobavka': ' ', 'koment': 'None', 'info_user': 'None',
                                 'message_id': 'None', 'price_dobavka': 'None', 'size': ' ', 'num_lot': '', 'id_lot': 'None'}
 
     def dobavki(self, chat_id):
@@ -139,7 +139,6 @@ class Markup():
             else:
                 lots = []
                 total_price = db_users.lot_price(chat_id)
-                print(total_price)
                 for lot in m:
                     jlot = json.loads(lot[0])
                     tot_price = (jlot['num'] * (jlot['price']))
@@ -315,18 +314,23 @@ class Markup():
 
     def show_lot(self, chat_id, inline_message_id):
         id_lot = mark_up.call_value(chat_id, 'id_lot')
+        if id_lot == 'None': id_lot = 1
         name_lot = mark_up.call_value(chat_id, 'name_lot')
         size = mark_up.call_value(chat_id, 'size')
         price = mark_up.call_value(chat_id, 'price')
         dobavka = mark_up.call_value(chat_id, 'dobavka')
+        if dobavka == ' ' or dobavka == '':
+            dobavka = 'Ничего не выбрано'
         price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
+        if price_dobavka == 'None': price_dobavka = 0.0
         pic = mark_up.call_value(chat_id, 'pic')
         num = mark_up.call_value(chat_id, 'num')
         message_text = (f"№{str(id_lot)}. {name_lot}"
-                        f"\n{size}\n{price} ₽\n\n"
+                        f"\n{size}\n{str(price)} ₽\n\n"
                         f'Добавки:\n{dobavka}'
                         f'\n\nЦена {str((price + price_dobavka ) * num)} ₽'
                         f"[\xa0]({pic})")
+
         bot.edit_message_text(text=message_text, inline_message_id=inline_message_id, parse_mode='Markdown')
 
 
@@ -417,7 +421,6 @@ def msg_apps(message):
                     mark_up.update_key(chat_id, 'price_dobavka', a['price_dobavka'])
                     break
                 else:
-                    print('not found')
                     pass
         dbworker.set_state(str(chat_id), '1')
     except Exception as e:
@@ -592,7 +595,6 @@ def callback_inline(callback):
                 pic = mark_up.call_value(chat_id, 'pic')
                 size = mark_up.call_value(chat_id, 'size')
                 price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
-                print(price_dobavka)
                 price_dobavka = 0.0 if a == 'Ничего не выбрано' else price_dobavka
                 bot.edit_message_text(inline_message_id=callback.inline_message_id,
                                       text=f"{name_lot}"
@@ -619,7 +621,7 @@ def callback_inline(callback):
                 if price1 > 6569.0:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
                                       text=f"Вы перешли к оплате заказа")
-                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:8408',
+                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:7231',
                                      start_parameter='true',
                                      title=title,
                                      description=f'✅ {string}',
@@ -681,8 +683,12 @@ def got_payment(message):
     for lot in m:
         jlot = json.loads(lot[0])
         tot_price = (jlot['num'] * (jlot['price']))
+        if jlot['koment'] == 'None':
+            koment = ' '
+        else:
+            koment = ('\nКомментарий:    ' + jlot['koment'])
         basket_lot = jlot['name_lot'] + '  ' + str(jlot['num']) + ' шт.  ' + str(
-            tot_price) + ' ₽\nДобавка:\n    ' + jlot['dobavka' +'\nКомментарий:    ' + jlot['koment']]
+            tot_price) + ' ₽\nДобавка:\n    ' + jlot['dobavka'] + koment
         lots.append(basket_lot)
     string = '\n\n✅ '.join(lots)
     from_chat_id = -1001302729558
@@ -710,10 +716,12 @@ def got_payment(message):
     db_users.clear_basket(chat_id)
 
 
+
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "OK", 200
+
 """
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
