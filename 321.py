@@ -1,643 +1,385 @@
 # -*- coding: utf-8 -*-
 # coding: utf-8
-import dbworker, telebot, shelve, random, datetime, urllib, os
-from kanc import dict2, dict_price
+import telebot
+import dbworker
+import shelve
+import datetime
+from datetime import datetime
+import random
+from cofe_lots import dict2, dict_dobavki
+
 from telebot.types import LabeledPrice
 from telebot import types
-from datetime import datetime
-import urllib.request as urllib2
-from urllib.parse import urlparse
-from PyPDF2 import PdfFileReader
-import os.path
-import xlrd
-import pandas as pd
-from docx import Document
-import zipfile
-from pptx import Presentation
-from bs4 import BeautifulSoup
-from flask import Flask, request
+from telebot import apihelper
+from db_users import Db_users
+import json
 
-#TOKEN = os.environ['token']
-bot = telebot.TeleBot(TOKEN)
-server = Flask(__name__)
-
-
+bot = telebot.TeleBot('696434286:AAEvYkaBQ0rhK-D83sWXDOW0wahkTBGTvLI')
+apihelper.proxy = {'https': 'socks5://481077652:1111@deimos.public.opennetwork.cc:1090'}
+basket = 'basket.py'
 
 
 class Markup():
     def __init__(self, start_func):
         self.start_func = start_func
+        
+    def update_key(self, chat_id, key, value):
+        with shelve.open('user_db.py') as db:
+            dictik = (db.get(str(chat_id)))
+            dictik.update({str(key): value})
+            db[str(chat_id)] = dictik
 
-    def inline_markup(self):
-        markup = types.InlineKeyboardMarkup()
-        markup.row_width = 1
-        markup.add(types.InlineKeyboardButton("Ч/Б Печать(распечатка)", callback_data='Ч/Б Печать(распечатка)'),
-                   types.InlineKeyboardButton("Цветная Печать А4", callback_data='Цветная печать А4'),
-                   types.InlineKeyboardButton("Печать фото 10х15", callback_data='Печать фото 10х15'),
-                   types.InlineKeyboardButton('А4 Ч/Б двусторонняя', callback_data='А4 Ч/Б двусторонняя'),
-                   types.InlineKeyboardButton("Печать на фотобумаге А4 (глянец, матовая)",
-                                              callback_data='Печать на фотобумаге')
-                   )
+    def call_value(self, chat_id, key):
+        with shelve.open('user_db.py') as db:
+            dictik = db.get(str(chat_id))
+            value = dictik.get(key)
+            return value
+
+    def start_dif(self, chat_id):
+        with shelve.open('user_db.py') as db:
+            db[str(chat_id)] = {'name_lot': 'None', 'num': 'None', 'price': 'None', 'total_price': 'None',
+                                'pic': 'None', 'number_ship': 'None',
+                                'time': 'None', 'dobavka': ' ', 'koment': 'None', 'info_user': 'None',
+                                'message_id': 'None', 'price_dobavka': 'None', 'size': ' ', 'num_lot': '', 'id_lot': 'None'}
+
+    def dobavki(self, chat_id):
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        row = []
+        row.append(types.InlineKeyboardButton("⬅ Назад", callback_data='назад_инлайн'))
+        for name_dobavka in dict_dobavki.keys():
+            if name_dobavka == mark_up.call_value(chat_id, 'dobavka'):
+                row.append(types.InlineKeyboardButton(text=f'✔ {name_dobavka}', callback_data=name_dobavka))
+            else:
+                row.append(types.InlineKeyboardButton(text=name_dobavka, callback_data=name_dobavka))
+        row.append(types.InlineKeyboardButton("❎ Сбросить", callback_data='сбросить'))
+        row.append(types.InlineKeyboardButton("🛒 В Корзину", callback_data='корзина'))
+        markup.add(*row)
         return markup
 
-    def inline_markup2(self):
-        markup = types.InlineKeyboardMarkup()
-        markup.add(types.InlineKeyboardButton("➕ Добавить файл", callback_data='добавить'))
+    def dobavki2(self, callback):
+        markup = types.InlineKeyboardMarkup(row_width=1)
+        row = []
+        row.append(types.InlineKeyboardButton("⬅ Назад", callback_data='назад_инлайн'))
+        for name_dobavka in dict_dobavki.keys():
+            if name_dobavka == callback.data:
+                row.append(types.InlineKeyboardButton(text=f'✔ {name_dobavka}', callback_data=name_dobavka))
+            else:
+                row.append(types.InlineKeyboardButton(text=name_dobavka, callback_data=name_dobavka))
+        row.append(types.InlineKeyboardButton("❎ Сбросить", callback_data='сбросить'))
+        row.append(types.InlineKeyboardButton("🛒 В Корзину", callback_data='корзина'))
+        markup.add(*row)
         return markup
 
-    def num_copy_markup1(self):
+    def basket(self, chat_id, callback):
+        m = db_users.select_user(chat_id)
+        if m == True:
+            bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=mark_up.add_lot())
+        else:
+            lots = []
+            total_price = db_users.lot_price(chat_id)
+            for lot in m:
+                jlot = json.loads(lot[0])
+                tot_price = (jlot['num'] * (jlot['price']))
+                basket_lot = jlot['name_lot'] + '  ' + str(jlot['num']) + ' шт.  ' + str(tot_price) + ' ₽\n    ' + jlot['dobavka']
+                lots.append(basket_lot)
+            string = '\n\n☕ '.join(lots)
+            mark_up.update_key(chat_id, 'total_price', total_price)
+            if callback.inline_message_id == None:
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Ваша корзина :\n\n'
+                                                                                                        f'☕ {string} \n\n'
+                                                                                                        f'Итого: {str(total_price)}  ₽.',
+                                          reply_markup=mark_up.finish_markup())
+            else:
+                bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Вы перешли в корзину')
+                bot.send_message(chat_id,
+                                     text='Ваша корзина :\n\n'
+                                          f'☕ {string}\n\n'
+                                          f'Итого: {str(total_price)}  ₽.',
+                                     reply_markup=mark_up.finish_markup())
+
+
+
+
+
+
+    def catalog(self):
+        keyboard = types.InlineKeyboardMarkup()
+        switch_button1 = types.InlineKeyboardButton(text="Кофе", switch_inline_query_current_chat="Кофе")
+        switch_button2 = types.InlineKeyboardButton(text="Десерт", switch_inline_query_current_chat="Десерт")
+        keyboard.add(switch_button1, switch_button2)
+        return keyboard
+
+    def num_markup1(self):
         markup = types.InlineKeyboardMarkup()
         a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
         a2 = types.InlineKeyboardButton('1', callback_data='jr')
         a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
-        return markup
-
-    def num_copy_markup3(self):
-        markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton('1', callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='НазадВканц')
+        a4 = types.InlineKeyboardButton(text='⬅ Назад', switch_inline_query_current_chat="Кофе")
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data='корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
+        a6 = types.InlineKeyboardButton("☕ Добавки", callback_data=u'добавки')
+        a7 = types.InlineKeyboardButton("📝 Комментарий", callback_data=u'комент')
+        a8 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
         markup.add(a7)
+        markup.add(a8)
         return markup
 
-    def num_copy_markup2(self, callback, num):
+    def num_markup2(self, callback, num):
+        markup = mark_up.top_markup(num)
+        return markup
+
+    def check_basket(self, chat_id):
+            m = db_users.select_user(chat_id)
+            if m == []:
+                bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=mark_up.add_lot())
+            else:
+                lots = []
+                total_price = db_users.lot_price(chat_id)
+                print(total_price)
+                for lot in m:
+                    jlot = json.loads(lot[0])
+                    tot_price = (jlot['num'] * (jlot['price']))
+                    basket_lot = jlot['name_lot'] + '  ' + str(jlot['num']) + ' шт.  ' + str(tot_price) + ' ₽\n    ' + jlot['dobavka']
+                    lots.append(basket_lot)
+                string = '\n\n☕ '.join(lots)
+                mark_up.update_key(chat_id, 'total_price', total_price)
+                mark_up.update_key(chat_id, 'id_lot', 'None')
+                bot.send_message(chat_id,
+                                     text='Ваша корзина :\n\n'
+                                          f'☕ {string}\n\n'
+                                          f'Итого: {str(total_price)}  ₽.',
+                                     reply_markup=mark_up.finish_markup())
+
+
+    def gg_basket(self, callback, id_lot):
+        chat_id = callback.from_user.id
+        name_lot = mark_up.call_value(chat_id, 'name_lot')
+        num = mark_up.call_value(chat_id, 'num')
+        size = mark_up.call_value(chat_id, 'size')
+        price = mark_up.call_value(chat_id, 'price')
+        price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
+        if price_dobavka == 'None': price_dobavka = 0
+        pic = mark_up.call_value(chat_id, 'pic')
+        dobavka = mark_up.call_value(chat_id, 'dobavka')
+        koment = mark_up.call_value(chat_id, 'koment')
+        lot_price = (int(price) + price_dobavka) * num
+        id_lot = mark_up.call_value(chat_id, 'id_lot')
+
+        info_lot = json.dumps({'name_lot': name_lot, 'num': num, 'price': price, 'lot_price': lot_price,
+                                'pic': pic, 'number_ship': 'None',
+                                'time': 'None', 'dobavka': dobavka, 'koment': koment, 'info_user': 'None',
+                                'message_id': 'None', 'price_dobavka': price_dobavka, 'size': size}, ensure_ascii=False)
+        if id_lot == 'None':
+            db_users.insert_into(info_lot, chat_id, lot_price)
+        else:
+            db_users.update_lot(info_lot, id_lot, lot_price)
+        mark_up.update_key(chat_id, 'price_dobavka', 0.0)
+        mark_up.update_key(chat_id, 'id_lot', 'None')
+
+    def backbasket(self):
         markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
-        return markup
-
-    def clear_basket(self, chat_id):
-        with shelve.open('itog.py') as db:
-            lst3 = list(db.keys())
-            lst = list((filter(lambda x: str(chat_id) in x, lst3)))
-            for dd in lst:
-                del db[dd]
-
-    def gen_markup1(self, chat_id, total_price):
-        markup = types.InlineKeyboardMarkup(True)
-        # a1 = types.InlineKeyboardButton("Cейчас в Telegram", callback_data='now')
-        a2 = types.InlineKeyboardButton("Оплатa при получении", callback_data='later')
-        a3 = types.InlineKeyboardButton("Перевод Яндекс.Деньги",
-                                        url=f'https://money.yandex.ru/transfer?receiver=410014990574641&sum={total_price}&success'
-                                            f'URL=&quickpay-back-url=https://t.me/copykotbot&shop-host=&label={chat_id}&'
-                                            'targets=Копир-коту&comment=&origin=form&selectedPaymentType=pc&destination='
-                                            'Donate&form-comment=Donate&short-dest=&quickpay-form=shop')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='корзина')
-        markup.add(a2)
-        markup.add(a3)
-        markup.add(a4)
-        return markup
-
-    def go_basket(self):
-        markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("🛒 В корзину", callback_data='корзина'),
-                   types.InlineKeyboardButton("🔃 Изменить примечание ", callback_data='примечания'),
-                   types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
-                   )
+        a1 = types.InlineKeyboardButton(text='⬅ Назад в Корзину', callback_data=u'корзина')
+        markup.add(a1)
         return markup
 
     def back(self):
         markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("⬅ Назад", callback_data='назад')
+        markup.add(types.InlineKeyboardButton("⬅ Назад", callback_data='назад_инлайн')
                    )
         return markup
 
-    def gen_markup2(self):
-        markup = types.InlineKeyboardMarkup(True)
-        markup.row_width = 2
-        markup.add(types.InlineKeyboardButton("🏁 Оформить", callback_data='оформить'),
-                   types.InlineKeyboardButton("➕ Добавить", callback_data='добавить'),
-                   types.InlineKeyboardButton("❎ Очистить", callback_data='очистить'),
-                   types.InlineKeyboardButton("🔃 Изменить", switch_inline_query_current_chat='Изменить')
-                   )
-        return markup
-
-    def kancel(self):
-        markup = types.InlineKeyboardMarkup(True)
-        markup.row_width = 2
-        markup.add(types.InlineKeyboardButton("✏ Ручки/Карандаши", switch_inline_query_current_chat='Ручки/Карандаши'),
-                   types.InlineKeyboardButton("📁 Папки и Файлы", switch_inline_query_current_chat='Папки и Файлы'),
-                   types.InlineKeyboardButton("🗒 Корректирующие средства",
-                                              switch_inline_query_current_chat='Корректирующие средства')
-                   )
-        return markup
-
-    def klava(self, query, num):
+    def finish_markup(self):
         markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
+        a1 = types.InlineKeyboardButton("✔Ближайщее время", callback_data=u'Ближайщее время')
+        a2 = types.InlineKeyboardButton("10 мин.", callback_data='10 мин.')
+        a3 = types.InlineKeyboardButton("30 мин.", callback_data=u'30 мин.')
+        a4 = types.InlineKeyboardButton("60 мин.", callback_data=u'60 мин.')
+        a5 = types.InlineKeyboardButton("📝 Изменить", switch_inline_query_current_chat='изменить')
+        a55 = types.InlineKeyboardButton("➕ Добавить", callback_data='добавить')
+        a6 = types.InlineKeyboardButton("❎ Очистить", callback_data='очистить')
+        a7 = types.InlineKeyboardButton("🏁 Оформить", callback_data='оформить')
+        markup.add(a1)
+        markup.add(a2, a3, a4)
+        markup.add(a5, a55)
+        markup.add(a6, a7)
+        return markup
+
+    def add_lot(self):
+        markup = types.InlineKeyboardMarkup()
+        a1 = types.InlineKeyboardButton("➕ Добавить", callback_data='добавить')
+        markup.add(a1)
+        return markup
+
+
+
+    def time2(self, callback):
+        markup = types.InlineKeyboardMarkup()
+        a1 = types.InlineKeyboardButton("Ближайщее время", callback_data=u'Ближайщее время')
+        a2 = types.InlineKeyboardButton("10 мин.", callback_data='10 мин.')
+        a3 = types.InlineKeyboardButton("30 мин.", callback_data=u'30 мин.')
+        a4 = types.InlineKeyboardButton("60 мин.", callback_data=u'60 мин.')
+        a5 = types.InlineKeyboardButton("📝 Изменить", switch_inline_query_current_chat='изменить')
+        a55 = types.InlineKeyboardButton("➕ Добавить", callback_data='добавить')
+        a6 = types.InlineKeyboardButton("❎ Очистить", callback_data='очистить')
+        a7 = types.InlineKeyboardButton("🏁 Оформить", callback_data='оформить')
+        if callback.data == '10 мин.':
+            a2 = types.InlineKeyboardButton("✔10 мин.", callback_data='10 мин.')
+        if callback.data == 'Ближайщее время':
+            a1 = types.InlineKeyboardButton("✔Ближайщее время", callback_data=u'Ближайщее время')
+        if callback.data == '30 мин.':
+            a3 = types.InlineKeyboardButton("✔30 мин.", callback_data=u'30 мин.')
+        if callback.data == '60 мин.':
+            a4 = types.InlineKeyboardButton("✔60 мин.", callback_data=u'60 мин.')
+        markup.add(a1)
+        markup.add(a2, a3, a4)
+        markup.add(a5, a55)
+        markup.add(a6, a7)
+        return markup
+
+    def common(self):
+        markup = types.InlineKeyboardMarkup()
+        a1 = types.InlineKeyboardButton("Начать выполнение ", callback_data=u'выполнение')
+        markup.add(a1)
         return markup
 
     def random_pool(self):
         a = random.randint(999, 9999)
         return a
 
-    def check_basket(self, chat_id):
-        #chat_id = callback.from_user.id
-        with shelve.open('itog.py') as db:
-            lst3 = list(db.keys())
-            if list(filter(lambda y: str(chat_id) in y, lst3)) == []:
-                bot.send_message(chat_id, 'Ваша корзина пуста!', reply_markup=mark_up.inline_markup2())
-            else:
-                l = []
-                s = []
-                r = []
-                lst3 = list(db.keys())
-                lst = list((filter(lambda x: str(chat_id) in x, lst3)))
-                for dd in lst:
-                    a = db.get(dd)
-                    r.append(a)
-                for line3 in r:
-                    line2 = ' '.join(line3[:5])
-                    lin = line3[4]
-                    s.append(float(lin))
-                    l.append(line2)
-                total_price = sum(s)
-                m = ' ₽\n\n➕ '.join(l)
-                mark_up.update_key(chat_id, 'total_price', total_price)
-                bot.send_message(chat_id, 'Ваша корзина :\n\n'
-                                          f'➕ {m} ₽.\n\n'
-                                          f'Итого: {str(total_price)}  ₽.', reply_markup=mark_up.gen_markup2())
+    def go_basket(self):
+        markup = types.InlineKeyboardMarkup(True)
+        markup.add(types.InlineKeyboardButton("🛒 В корзину", callback_data='корзина'),
+                   types.InlineKeyboardButton("🔃 Изменить примечание ", callback_data='комент'),
+                   types.InlineKeyboardButton("⬅ Назад", callback_data='назад_инлайн')
+                   )
+        return markup
 
-    def result_ship(self, chat_id, int):
-        with shelve.open('itog.py') as db:
-            l = []
-            r = []
-            t = []
-            lst3 = list(db.keys())
-            lst = list((filter(lambda x: str(chat_id) in x, lst3)))  # фильтр на юзера
-            for dd in lst:
-                a = db.get(dd)
-                r.append(a)
-            for line3 in r:
-                line1 = ' '.join(line3[:5])
-                line2 = ' '.join(line3[:6])
-                l.append(line2)
-                t.append(line1)
-            m = '+++++++++++++++++++++++++++++++++++++++++++++\n\n'.join(l)
-            j = ' ₽\n\n➕ '.join(t)
-            if int == 1:
-                return j
-            else:
-                return m
-
-    def forward_file(self, chat_id, number):
-        with shelve.open('itog.py') as db:
-            r = []
-            lst3 = list(db.keys())
-            lst = list((filter(lambda x: str(chat_id) in x, lst3)))  # фильтр на юзера
-            for dd in lst:
-                a = db.get(dd)
-                r.append(a)
-            for line3 in r:
-                file_id = line3[7]
-                if file_id == 'None':
-                    pass
-                else:
-                    bot.send_document(-1001302729558, str(file_id), caption=f'{number}')
-
-
-    def gg_basket(self, callback):
-        chat_id = callback.from_user.id
-        file_name = mark_up.call_value(chat_id, 'file_name')
-        type_print = mark_up.call_value(chat_id, 'type_print')
-        num = mark_up.call_value(chat_id, 'num')
-        num_page = mark_up.call_value(chat_id, 'num_page')
-        price_print = mark_up.call_value(chat_id, 'price_print')
-        link = mark_up.call_value(chat_id, 'link')
-        apps = mark_up.call_value(chat_id, 'apps')
-        file_id = mark_up.call_value(chat_id, 'file_id')
-        with shelve.open('itog.py') as db:
-            db[str(chat_id) + ':' + file_name] = [file_name, f' ({type_print}) ',
-                                                       (str(num) + ' экз.'),
-                                                       (str(num_page) + ' стр.'),
-                                                       (str(num_page * num * price_print)),
-                                                       ('\n\n' + str(link) + '\n\n'),
-                                                       ('Прим.\n' + str(apps) + '\n\n'),
-                                                        str(file_id)]
-
-    def add_kancel(self, callback):
-        chat_id = callback.from_user.id
-        file_name = mark_up.call_value(chat_id, 'file_name')
-        type_print = mark_up.call_value(chat_id, 'type_print')
-        num = mark_up.call_value(chat_id, 'num')
-        price_print = mark_up.call_value(chat_id, 'price_print')
-        mark_up.update_key(chat_id, 'link', 'None')
-        link = mark_up.call_value(chat_id, 'link')
-        apps = mark_up.call_value(chat_id, 'apps')
-        mark_up.update_key(chat_id, 'file_id', 'None')
-        file_id = mark_up.call_value(chat_id, 'file_id')
-        with shelve.open('itog.py') as db:
-            db[str(chat_id) + ':' + file_name] = [file_name, f'{type_print}', (str(num) + ' экз.'),
-                                                       ' - ',
-                                                       (str(num * price_print)),
-                                                       ('\n\n' + str(link) + '\n\n'),
-                                                       ('Прим.\n' + str(apps) + '\n\n'),
-                                                           str(file_id)]
-
-    def callduty(self, price_print, callback):
-        chat_id = callback.from_user.id
-        type_print = callback.data
-        mark_up.update_key(chat_id, 'price_print', price_print)
-        mark_up.update_key(chat_id, 'type_print', type_print)
-
-    def inline_plus(self, callback, num):
+    def top_markup(self, num):
         markup = types.InlineKeyboardMarkup()
         a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
         a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
         a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
+        a4 = types.InlineKeyboardButton("⬅ Назад", switch_inline_query_current_chat="Кофе")
         a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
+        a6 = types.InlineKeyboardButton("☕ Добавки", callback_data=u'добавки')
+        a7 = types.InlineKeyboardButton("📝 Комментарий", callback_data=u'комент')
+        a8 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
         markup.add(a1, a2, a3)
         markup.add(a4, a5)
         markup.add(a6)
         markup.add(a7)
+        markup.add(a8)
         return markup
 
-    def inline_plus_kanc(self, callback, num):
-        markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='НазадВканц')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data='корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
-        return markup
+    def markup_num(self, num, callback, chat_id):
+        markup = mark_up.top_markup(num)
+        if callback.inline_message_id == None:
+            bot.edit_message_reply_markup(chat_id=chat_id, message_id=callback.message.message_id, reply_markup=markup)
+        else:
+            mark_up.show_lot(chat_id, callback.inline_message_id)
+            bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup)
 
-    def plus(self, callback, num):
-        markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
-        return markup
 
-    def plus_kanc(self, callback, num):
-        markup = types.InlineKeyboardMarkup()
-        a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-        a2 = types.InlineKeyboardButton(str(num), callback_data='jr')
-        a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data='НазадВканц')
-        a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data='корзина')
-        a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-        a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-        markup.add(a1, a2, a3)
-        markup.add(a4, a5)
-        markup.add(a6)
-        markup.add(a7)
-        return markup
 
-    def add_knopka(self, id, thumb_url, title, price):
+
+    def add_knopka(self, id, thumb_url, title, price, size):
         r1 = types.InlineQueryResultArticle(
             id=id,
             thumb_url=thumb_url,
             title=title,
-            description=f'Цена {price} ₽',
-            input_message_content=types.InputTextMessageContent(message_text=f"{title}\n\nЦена {price} ₽"
+            description=f'{size}\nЦена {price} ₽',
+            input_message_content=types.InputTextMessageContent(message_text=f"{title}"
+                                                                             f"\n{size}\n{price} ₽\n\n"
+                                                                             f'Добавки:\nНичего не выбрано'
+                                                                             f'\n\nЦена {price} ₽'
                                                                              f"[\xa0]({thumb_url})"
                                                                 , parse_mode='Markdown'),
-            reply_markup=mark_up.num_copy_markup3()
+            reply_markup=mark_up.num_markup1()
         )
         return r1
 
-    def kanc_finish(self, atr):
+    def cofe_finish(self, atr):
         r = []
         n_keys = dict2[atr].keys()
         for key1 in n_keys:
             a = dict2[atr].get(key1)
             d = mark_up.add_knopka(
-                a['id'], a['thumb_url'], a['title'], a['price']
+                a['id'], a['thumb_url'], a['title'], a['price'], a['size']
             )
             r.append(d)
         return r
 
-    def finish_payments(self, chat_id):
-        number = f'{str(chat_id)}-{mark_up.random_pool()}'
-        j = mark_up.result_ship(chat_id, 1)
-        m = mark_up.result_ship(chat_id, 0)
-        from_chat_id = -1001302729558
-        now = datetime.now()
-        hours = int(now.hour) + 7
-        time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
-        type_pay = 'Перевод Яндекс.Деньги'
-        name = mark_up.call_value(chat_id, 'info_user')
-        total_price = mark_up.call_value(chat_id, 'total_user')
-        bot.edit_message_text(chat_id=chat_id, message_id=mark_up.call_value(chat_id, 'message_id'),
-                              text=f'Супер! Платёж на сумму {str(total_price)} ₽ получен!✅\nТеперь ваш заказ отправлен Копир-кот!✅\n'
-                                   f'\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
-                                   f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
-        bot.send_message(from_chat_id, f'{m}'
-                                       f'___________________________\n\n'
-                                       f'Номер заказа - {number}\n'
-                                       f'Время заказа: {time_order}\n'
-                                       f'Заказчик: {name}\n'
-                                       f'Тип оплаты: {type_pay}\n\n'
-                                       f'Итого: {str(total_price)} ₽.'
-                         )
-        mark_up.clear_basket(chat_id)
-
-    def pechat(self, a, price_print, callback):
-        chat_id = callback.from_user.id
-        mark_up.callduty(price_print, callback)
+    def show_lot(self, chat_id, inline_message_id):
+        id_lot = mark_up.call_value(chat_id, 'id_lot')
+        name_lot = mark_up.call_value(chat_id, 'name_lot')
+        size = mark_up.call_value(chat_id, 'size')
+        price = mark_up.call_value(chat_id, 'price')
+        dobavka = mark_up.call_value(chat_id, 'dobavka')
+        price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
+        pic = mark_up.call_value(chat_id, 'pic')
         num = mark_up.call_value(chat_id, 'num')
-        if num != 1:
-            markup = mark_up.num_copy_markup2(callback, num)
-        else:
-            markup = mark_up.num_copy_markup1()
-        if callback.inline_message_id == None:
-            bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                  text=f'📌 {a} - {str(price_print)} руб/стр.\n\n'
-                                       'Выберите кол-во копий:', reply_markup=markup)
-        else:
-            bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                  text=f'📌 {a} - {str(price_print)} руб/стр.\n\n'
-                                       'Выберите кол-во копий:', reply_markup=markup)
-
-    def forward(self):
-        markup = types.InlineKeyboardMarkup(True)
-        markup.add(types.InlineKeyboardButton("Поделиться ссылкой на бота", url='https://t.me/share/url?url=https%3A//t.me/copykotbot'))
-        return markup
-
-    def update_key(self, chat_id, key, value):
-        with shelve.open('local_dif.py') as db:
-            dictik = (db.get(str(chat_id)))
-            dictik.update({str(key): value})
-            db[str(chat_id)] = dictik
-
-    def call_value(self, chat_id, key):
-        with shelve.open('local_dif.py') as db:
-            dictik = db.get(str(chat_id))
-            value = dictik.get(key)
-            return value
-
-    def start_dif(self, chat_id):
-        with shelve.open('local_dif.py') as db:
-            db[str(chat_id)] = {'type_print': 'None', 'num': 'None', 'link': 'None', 'file_id': 'None',
-                                'file_name': 'None', 'apps': 'None',
-                                'num_page': 'None', 'total_price': 'None', 'price_print': 'None', 'info_user': 'None',
-                                'message_id': 'None'}
-
+        message_text = (f"№{str(id_lot)}. {name_lot}"
+                        f"\n{size}\n{price} ₽\n\n"
+                        f'Добавки:\n{dobavka}'
+                        f'\n\nЦена {str((price + price_dobavka ) * num)} ₽'
+                        f"[\xa0]({pic})")
+        bot.edit_message_text(text=message_text, inline_message_id=inline_message_id, parse_mode='Markdown')
 
 
 mark_up = Markup('ok')
 
+db_users = Db_users()
+
 
 @bot.message_handler(commands=['start', 'reset'])
-def handle_start(message):
-    user_markup1 = telebot.types.ReplyKeyboardMarkup(True, True)
-    user_markup1.row('➕ Добавить файл', '🛒 Корзина')
-    user_markup1.row('📌 Канцелярия', '📲 Обратная связь')
-    name = message.from_user.first_name
-    chat_id = str(message.from_user.id)
-    dbworker.set_state(chat_id, '1')
+def callback_inline(message):
+    chat_id = message.from_user.id
     mark_up.start_dif(chat_id)
-    bot.send_message(message.chat.id,
-                     f'Приветствую, {name}! Я Копир-кот!\n\nУ нас ты можешь сделать:\n🔹 Ч/Б копии/распечатка А4 - 2,5 руб/стр.'
-                     f'\n🔹 А4 Ч/Б двусторонняя - 4 руб/стр.\n🔹 Скан - 2 руб/стр.\n🔹 Цветная распечатка А4 - 20 руб/стр.\n'
-                     f'🔹 Печать фото 10х15 - 10 руб/фото.'
-                     f'\n🔹 Печать на фотобумаге А4 (глянец, матовая) - 30 руб/стр.'
-                     f'\n🔹 Купить канцелярию.\n\nЗаходи в ТЦ АВЕНЮ на 4 этаж!',
+    user_markup1 = telebot.types.ReplyKeyboardMarkup(True, True)
+    user_markup1.row('☕ Каталог', '🛒 Корзина')
+    user_markup1.row('📌 Акции', '📲 Обратная связь')
+    db_users.loadDB()
+    name = message.from_user.first_name
+    dbworker.set_state(str(chat_id), '1')
+    bot.send_message(message.chat.id, f'Приветствую, {name}! Я Кофе-бот!\n\nУ нас ты можешь заказать кофе!',
                      reply_markup=user_markup1)
-
-
-@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == 'kanc')
-def msg_apps(message):
-    try:
-        chat_id = message.chat.id
-        type_print = 'Канцелярия'
-        mark_up.update_key(chat_id, 'type_print', type_print)
-        for y in dict_price.keys():
-            if y in message.text:
-                mark_up.update_key(chat_id, 'file_name', y)
-                mark_up.update_key(chat_id, 'price_print', dict_price.get(y))
-            else:
-                pass
-        dbworker.set_state(str(chat_id), '1')
-    except Exception as e:
-        print(e)
-
-
-@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == 'change')
-def msg_apps(message):
-    try:
-        chat_id = message.chat.id
-        with shelve.open('itog.py') as db:
-            lst3 = list(db.keys())
-            keys = list((filter(lambda x: str(message.from_user.id) in x, lst3)))
-            for dd in keys:
-                a = list(db.get(dd))
-                if message.text in a[0]:
-                    num = a[2]
-                    link = a[5]
-                    if a[3] == ' - ':
-                        num_page = '1'
-                    else:
-                        num_page = (a[3])[:-4]
-                    mark_up.update_key(chat_id, 'file_name', a[0])
-                    mark_up.update_key(chat_id, 'price_print', (float(a[4]) / (float(num[:-4]) * float(num_page))))
-                    mark_up.update_key(chat_id, 'link', link[2:-2])
-                    mark_up.update_key(chat_id, 'type_print', a[1])
-                    mark_up.update_key(chat_id, 'num', int(num[0]))
-                    mark_up.update_key(chat_id, 'link', 'None')
-                else:
-                    pass
-        dbworker.set_state(str(chat_id), '1')
-    except Exception as e:
-        print(e)
-
-
-@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == '2')
-def msg_apps(message):
-    try:
-        chat_id = message.chat.id
-        mark_up.update_key(chat_id, 'apps', message.text)
-        bot.reply_to(message, 'Добавлю это сообщение в примечание к файлу', reply_markup=mark_up.go_basket())
-        dbworker.set_state(str(chat_id), '1')
-    except Exception as e:
-        print(e)
-
-
-@bot.message_handler(content_types=['text', 'document', 'photo'])
-def msg_hand(message):
-    try:
-        chat_id = message.from_user.id
-        info_user = f'{message.from_user.first_name} {message.from_user.last_name} @{message.from_user.username}'
-        mark_up.update_key(chat_id, 'info_user', info_user)
-        num = 1
-        mark_up.update_key(chat_id, 'num', num)
-        if message.text == '📌 Канцелярия':
-            bot.send_message(chat_id, 'Добро пожаловать в канцелярию ..', reply_markup=mark_up.kancel())
-            type_print = 'Канцелярия'
-            mark_up.update_key(chat_id, 'type_print', type_print)
-        if message.text == '📲 Обратная связь':
-            bot.send_contact(chat_id, phone_number=89039206886, first_name='Екатерина')
-            bot.send_location(chat_id, 56.012386, 92.8707427)
-            bot.send_message(chat_id, 'Адрес: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n'
-                                      'Пн - Сб 10:00 - 19:00\nВс - выходной')
-        if message.content_type == 'photo':
-            file_id = (message.json).get('photo')[0].get('file_id')
-            mark_up.update_key(chat_id, 'file_id', file_id)
-            file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-            mark_up.update_key(chat_id, 'link', link)
-            file_name = file_id[:10] + '.png'
-            mark_up.update_key(chat_id, 'file_name', file_name)
-            bot.send_message(message.chat.id, 'Вы добавили файл:\n\n'
-                                              f'💾 {file_name}'
-                                              '\n\nВыберите услугу:', reply_markup=mark_up.inline_markup())
-        if message.content_type == 'document':
-            file_id = message.document.file_id
-            mark_up.update_key(chat_id, 'file_id', file_id)
-            file_info = bot.get_file(file_id)
-            link = f'https://api.telegram.org/file/bot{TOKEN}/{file_info.file_path}'
-            mark_up.update_key(chat_id, 'link', link)
-            file_name = message.document.file_name
-            mark_up.update_key(chat_id, 'file_name', file_name)
-            if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                bot.send_message(message.from_user.id,
-                                 '❗Такие старые форматы  -  .doc,  .xls,  .ppt.❗\n\n'
-                                 f'💾 {file_name}\n\n'
-                                 '❗Не смогу определить их'
-                                 ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 0❗\n\nПоддерживаю форматы:\n\n'
-                                 '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                 '\n\nВыберите услугу:', reply_markup=mark_up.inline_markup())
-            else:
-                bot.send_message(message.chat.id, 'Вы добавили файл:\n\n'
-                                                  f'💾 {file_name}\n\n'
-                                                  'Выберите услугу:', reply_markup=mark_up.inline_markup())
-        if 'http' in message.text:
-            if 'no_preview' or 'psv4.userapi.com' in message.text:
-                url = message.text
-                result = urllib.request.urlopen(url)
-                file_name = os.path.basename(urllib.parse.urlparse(result.url).path)
-                mark_up.update_key(chat_id, 'file_name', file_name)
-                mark_up.update_key(chat_id, 'link', url)
-                if file_name.endswith('.ppt') or file_name.endswith('.doc') or file_name.endswith('.xls'):
-                    bot.send_message(message.from_user.id,
-                                     '❗Такие старые форматы  -  .doc,  .xls,  .ppt.❗\n\n'
-                                     f'💾 {file_name}\n\n'
-                                     '❗Не смогу определить их'
-                                     ' стоимость❗\nПоэтому принимаю кол-во страниц этого файла за 0❗\n\nПоддерживаю форматы:\n\n'
-                                     '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg'
-                                     '\n\nВыберите услугу:', reply_markup=mark_up.inline_markup())
-                else:
-                    bot.send_message(message.chat.id, 'Вы добавили файл:\n\n'
-                                                      f'💾 {file_name}\n\n'
-                                                      'Выберите услугу:', reply_markup=mark_up.inline_markup())
-            else:
-                bot.reply_to(message, '❗По этой ссылку я скачать файл не смогу - нужна ссылка на скачивание❗\n\n'
-                                      'Пример формата ссылок из VK:\n\n'
-                                      '📎 https://vk.com/doc81064057_483314359?hash=406d1e781b028f5265&dl=HAYTANRUGA2TO:'
-                                      '1544379753:9642c332b34e71d369&api=1&no_preview=1\n\n'
-                                      '📎 https://psv4.userapi.com/c848036/u81064057/docs/d16/3bc44478b397/Skhema_Kriolita.pdf'
-                                      '?extra=P2VMpQXtPHssvjwo2YAeVlvWK86Ox-cjjWcM3yJDZlb1eMN-EpsOJ8gh3yFbFkHeisDyZXP'
-                                      '-Yci9uxQqf2IpI6fcSUZAhw02RKOfVvGAbEEmCLsG4_PGgCChuAhqArcnrySY_2kgDI9Y32_XuD6Kjkg',
-                             reply_markup=mark_up.inline_markup2())
-        if message.text == '➕ Добавить файл':
-            bot.send_message(chat_id,
-                             text=
-                             '❗Отправьте, пожалуйста, ссылку на файл, фотографию или сам файл, который нужно распечатать❗\n\n'
-                             'Поддерживаю форматы:\n\n'
-                             '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
-        if message.text == '🛒 Корзина':
-            mark_up.check_basket(chat_id)
-    except Exception as e:
-        print(e)
-        if e == 'HTTP Error 404: Not Found':
-            bot.reply_to(message,
-                         'Ой, ошибка❗\nНичего не нашел по этой ссылке, попробуйте скинуть ссылку на файл по-другому')
-        bot.send_message(481077652, str(e))
+    bot.send_message(message.from_user.id, 'Выбери категорию:',
+                         reply_markup=mark_up.catalog())
 
 
 @bot.inline_handler(func=lambda query: True)
 def inline_query(query):
     try:
         chat_id = query.from_user.id
-        dbworker.set_state(str(chat_id), 'kanc')
-        if query.query == 'Ручки/Карандаши':
-            r = mark_up.kanc_finish(atr='pens')
+        num = 1
+        mark_up.update_key(chat_id, 'num', num)
+        if query.query == 'Кофе':
+            dbworker.set_state(str(chat_id), '2')
+            r = mark_up.cofe_finish(atr='cofe')
             bot.answer_inline_query(query.id, r, cache_time=0, is_personal=True)
-        if query.query == 'Папки и Файлы':
-            r = mark_up.kanc_finish(atr='files')
-            bot.answer_inline_query(query.id, r, cache_time=0, is_personal=True)
-        if query.query == 'Корректирующие средства':
-            r = mark_up.kanc_finish(atr='corection')
-            bot.answer_inline_query(query.id, r, cache_time=0, is_personal=True)
-        if query.query == 'Изменить':
-            with shelve.open('itog.py') as db:
+        if query.query == 'изменить':
+                lots = db_users.change_lot(chat_id)
                 r = []
-                lst3 = list(db.keys())
-                keys = list((filter(lambda x: str(query.from_user.id) in x, lst3)))
-                for dd in keys:
-                    a = list(db.get(dd))
-                    default = 'https://pp.userapi.com/c845218/v845218058/cd929/DMHxsJvNO6s.jpg'
-                    num = a[2]
-                    markup = types.InlineKeyboardMarkup()
-                    a1 = types.InlineKeyboardButton("-", callback_data=u'-1')
-                    a2 = types.InlineKeyboardButton(str(num[:-4]), callback_data='jr')
-                    a3 = types.InlineKeyboardButton("+", callback_data=u'+1')
-                    if a[1] == 'Канцелярия':
-                        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'НазадВканц')
-                    else:
-                        a4 = types.InlineKeyboardButton("⬅ Назад", callback_data=u'назад1')
-                    a5 = types.InlineKeyboardButton("🛒 Корзина", callback_data=u'корзина')
-                    a6 = types.InlineKeyboardButton("📝 Примечания", callback_data=u'примечания')
-                    a7 = types.InlineKeyboardButton("❌ Удалить позицию", callback_data=u'удалить позицию')
-                    markup.add(a1, a2, a3)
-                    markup.add(a4, a5)
-                    markup.add(a6)
-                    markup.add(a7)
-                    input_content = types.InputTextMessageContent(message_text=f"{a[0]}\n\n")
-                    r2 = types.InlineQueryResultArticle(id=a[0],
-                                                        thumb_url=default, title=a[0],
-                                                        description=f'{a[1]}\n{a[2]}\n{a[4]} ₽',
+                for lot in lots:
+                    id_id = lot[0]
+                    a = json.loads(lot[1])
+                    num = a['num']
+                    price = a['price']
+                    dobavka = 'Ничего не выбрано' if a['dobavka'] == ' ' else a['dobavka']
+                    price_dobavka = a['price_dobavka']
+                    size = a['size']
+                    markup = mark_up.top_markup(num)
+                    input_content = types.InputTextMessageContent(message_text=f"№{str(id_id)}. {a['name_lot']}"
+                                                                             f"\n{size}\n{price} ₽\n\n"
+                                                                             f'Добавки:\n{dobavka}'
+                                                                             f'\n\nЦена {str((price + price_dobavka ) * num)} ₽'
+                                                                             f"[\xa0]({a['pic']})"
+                                                                , parse_mode='Markdown')
+                    r2 = types.InlineQueryResultArticle(id=str(id_id),
+                                                        thumb_url=a['pic'], title=a['name_lot'],
+                                                        description=f'{size}\n{num} шт.\n{str((price + price_dobavka ) * num)} ₽',
                                                         input_message_content=input_content, reply_markup=markup)
                     r.append(r2)
                 dbworker.set_state(str(chat_id), 'change')
@@ -646,306 +388,331 @@ def inline_query(query):
         print(e)
 
 
-@bot.callback_query_handler(func=lambda call: call == '+1' or '-1')
-def callback_query_handler(callback):
+@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == 'koment')
+def mdd_apps(message):
+    try:
+        chat_id = message.chat.id
+        mark_up.update_key(chat_id, 'koment', message.text)
+        bot.reply_to(message, 'Добавлю это сообщение комментарием к позиции', reply_markup=mark_up.go_basket())
+        dbworker.set_state(str(chat_id), '1')
+    except Exception as e:
+        print(e)
+
+@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == 'change')
+def msg_apps(message):
+    try:
+        chat_id = message.chat.id
+        lots = db_users.change_lot(chat_id)
+        for lot in lots:
+                a = json.loads(lot[1])
+                if a['name_lot'] and ('№'+str(lot[0])+".") in message.text:
+                    mark_up.update_key(chat_id, 'id_lot', lot[0])
+                    mark_up.update_key(chat_id, 'name_lot', a['name_lot'])
+                    mark_up.update_key(chat_id, 'price', (float(a['price'])))
+                    mark_up.update_key(chat_id, 'num', a['num'])
+                    mark_up.update_key(chat_id, 'pic', a['pic'])
+                    mark_up.update_key(chat_id, 'dobavka', a['dobavka'])
+                    mark_up.update_key(chat_id, 'price_dobavka', a['price_dobavka'])
+                    break
+                else:
+                    print('not found')
+                    pass
+        dbworker.set_state(str(chat_id), '1')
+    except Exception as e:
+        print(e)
+
+
+
+@bot.message_handler(func=lambda message: dbworker.get_current_state(str(message.chat.id)) == '2')
+def msg_apps(message):
+    try:
+        chat_id = message.chat.id
+        n_keys = dict2['cofe'].keys()
+        for key1 in n_keys:
+            a = dict2['cofe'].get(key1)
+            if a['title'] in message.text:
+                mark_up.update_key(chat_id, 'pic', a['thumb_url'])
+                mark_up.update_key(chat_id, 'size', a['size'])
+                mark_up.update_key(chat_id, 'name_lot', a['title'])
+                mark_up.update_key(chat_id, 'price', a['price'])
+            dbworker.set_state(str(chat_id), '1')
+    except Exception as e:
+        print(e)
+
+
+
+@bot.message_handler(func=lambda message: True)
+def handle_text(message):
+    try:
+        chat_id = message.from_user.id
+        if message.text == "☕ Каталог":
+            bot.send_message(chat_id, 'Выберите категорию', reply_markup=mark_up.catalog())
+        if message.text == "🛒 Корзина":
+            mark_up.check_basket(chat_id)
+    except Exception as e:
+        print(e)
+
+
+
+
+@bot.callback_query_handler(func=lambda callback: dbworker.get_current_state(str(callback.from_user.id)) == 'dobavki')
+def callback_inline(callback):
+    try:
+        if callback:
+            chat_id = callback.from_user.id
+            if callback.data == 'назад_инлайн':
+                dbworker.set_state(str(chat_id), '1')
+                num = mark_up.call_value(chat_id, 'num')
+                markup = mark_up.num_markup2(callback, num)
+                name_lot = mark_up.call_value(chat_id, 'name_lot')
+                dobavka = mark_up.call_value(chat_id, 'dobavka')
+                a = 'Ничего не выбрано' if dobavka == ' ' else dobavka
+                price = mark_up.call_value(chat_id, 'price')
+                pic = mark_up.call_value(chat_id, 'pic')
+                size = mark_up.call_value(chat_id, 'size')
+                price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
+                price_dobavka = 0.0 if a == 'Ничего не выбрано' else price_dobavka
+                bot.edit_message_text(inline_message_id=callback.inline_message_id,
+                                      text=f"{name_lot}"
+                                                f"\n{size}\n{price} ₽\n\n"
+                                                f'Добавки:\n{a}'
+                                                f'\n\nЦена {(str((float(price) * num) + (price_dobavka * num)))} ₽'
+                                                f"[\xa0]({pic})", parse_mode='Markdown', reply_markup=markup)
+            elif callback.data == 'сбросить':
+                mark_up.update_key(chat_id, 'price_dobavka', 0.0)
+                mark_up.update_key(chat_id, 'dobavka', '')
+                markup = mark_up.dobavki2(callback)
+                bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup)
+            elif callback.data == 'корзина':
+                dbworker.set_state(str(chat_id), '1')
+                id_lot = mark_up.call_value(chat_id, 'id_lot')
+                mark_up.gg_basket(callback, id_lot)
+                mark_up.basket(chat_id, callback)
+            else:
+                for key in dict_dobavki.keys():
+                    if key in callback.data:
+                        mark_up.update_key(chat_id, 'dobavka', key)
+                        mark_up.update_key(chat_id, 'price_dobavka', dict_dobavki.get(key))
+                        markup2 = mark_up.dobavki2(callback)
+                        bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup2)
+                        break
+                    else:
+                        mark_up.update_key(chat_id, 'price_dobavka', 0.0)
+                        mark_up.update_key(chat_id, 'dobavka', callback.data)
+                        markup3 = mark_up.dobavki2(callback)
+                        bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup3)
+    except Exception as e:
+        print(e)
+
+
+
+
+
+@bot.callback_query_handler(func=lambda callback: True)
+def callback_inline(callback):
     try:
         if callback:
             chat_id = callback.from_user.id
             num = mark_up.call_value(chat_id, 'num')
-            if callback.data == 'удалить позицию':
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text='Позиция удалена', reply_markup
-                                          =mark_up.inline_markup2())
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Позиция удалена')
-                file_name = mark_up.call_value(chat_id, 'file_name')
-                with shelve.open('itog.py') as db:
-                    del db[str(chat_id) + ':' + file_name]
-                mark_up.check_basket(chat_id)
+            name_lot = mark_up.call_value(chat_id, 'name_lot')
             if callback.data == '+1':
                 num += 1
                 mark_up.update_key(chat_id, 'num', num)
-                if callback.inline_message_id == None:
-                    markup = mark_up.plus(callback, num)
-                    bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id,
-                                                  reply_markup=markup)
-                else:
-                    if mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                        markup = mark_up.inline_plus_kanc(callback, num)
-                    else:
-                        markup = mark_up.inline_plus(callback, num)
-                    bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup)
+                mark_up.markup_num(num, callback, chat_id)
             if callback.data == '-1':
                 num -= 1
                 if num < 1:
                     num = 1
-                if callback.inline_message_id == None:
-                    markup = mark_up.plus(callback, num)
-                    bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id,
-                                                  reply_markup=markup)
-                else:
-                    if mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                        markup = mark_up.inline_plus_kanc(callback, num)
-                    else:
-                        markup = mark_up.inline_plus(callback, num)
-                    bot.edit_message_reply_markup(inline_message_id=callback.inline_message_id, reply_markup=markup)
                 mark_up.update_key(chat_id, 'num', num)
-            if callback.data == 'назад1':
-                file_name = mark_up.call_value(chat_id, 'file_name')
-                if callback.inline_message_id == None:
-                    if mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                        markup = mark_up.kancel()
-                    else:
-                        markup = mark_up.inline_markup()
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text=f'Выберите услугу:\n\n'
-                                               f'💾 {file_name}',
-                                          reply_markup=markup)
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text=f'Выберите услугу:\n\n'
-                                               f'💾 {file_name}',
-                                          reply_markup=mark_up.inline_markup())
-            if callback.data == 'НазадВканц':
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text=f'Добро пожаловать в канцелярию ..',
-                                          reply_markup=mark_up.kancel())
-                else:
-                    bot.send_message(chat_id,
-                                     text=f'Добро пожаловать в канцелярию ..',
-                                     reply_markup=mark_up.kancel())
-            if callback.data == 'корзина':
-                file_name = (mark_up.call_value(chat_id, 'file_name')).lower()
-                url = mark_up.call_value(chat_id, 'link')
-                if mark_up.call_value(chat_id, 'type_print') != 'Канцелярия':
-                    urllib2.urlretrieve(url, file_name)
-                elif mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                    mark_up.add_kancel(callback)
-                if file_name.endswith('.docx'):
-                    document = Document(file_name)
-                    document.save(f'{file_name}1.docx')
-                    document.save(f'{file_name}1.zip')
-                    zf = zipfile.ZipFile(f'{file_name}1.zip')
-                    f = zf.open('docProps/app.xml').read()
-                    soup = BeautifulSoup(f, 'xml')
-                    num_page = soup.find('Pages').next_element
-                    mark_up.update_key(chat_id, 'num_page', int(num_page))
-                    mark_up.gg_basket(callback)
-                if file_name.endswith('.pdf'):
-                    input1 = PdfFileReader(open(file_name, "rb"))
-                    num_page = input1.getNumPages()
-                    mark_up.update_key(chat_id, 'num_page', int(num_page))
-                    mark_up.gg_basket(callback)
-                format1 = ['.frw', '.cdw', '.png', 'jpeg', '.dwg', '.dwt' '.gif', '.txt', '.mp4', '.jpg']
-                for y in format1:
-                    if y == file_name[-4:]:
-                        num_page = 1
-                        mark_up.update_key(chat_id, 'num_page', num_page)
-                        mark_up.gg_basket(callback)
-                    else:
-                        pass
-                if file_name.endswith('.doc'):
-                    num_page = 0
-                    mark_up.update_key(chat_id, 'num_page', num_page)
-                    mark_up.gg_basket(callback)
-                if file_name.endswith('.pptx'):
-                    filename = os.path.abspath(file_name)
-                    np = Presentation(filename)
-                    num_page = len(np.slides)
-                    mark_up.update_key(chat_id, 'num_page', int(num_page))
-                    mark_up.gg_basket(callback)
-                if file_name.endswith('.xlsx'):
-                    xl = pd.ExcelFile(os.path.abspath(file_name))
-                    num_page = len(xl.sheet_names)
-                    mark_up.update_key(chat_id, 'num_page', int(num_page))
-                    mark_up.gg_basket(callback)
-                with shelve.open('itog.py') as db:
-                    l = []
-                    s = []
-                    r = []
-                    lst3 = list(db.keys())
-                    lst = list((filter(lambda x: str(chat_id) in x, lst3)))
-                    for dd in lst:
-                        a = db.get(dd)
-                        r.append(a)
-                    for line3 in r:
-                        line2 = ' '.join(line3[:5])
-                        lin = line3[4]
-                        s.append(float(lin))
-                        l.append(line2)
-                    total_price = sum(s)
-                m = ' ₽\n\n➕ '.join(l)
-                mark_up.update_key(chat_id, 'total_price', total_price)
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text='Ваша корзина :\n\n'
-                                               f'➕ {m} ₽.\n\n'
-                                               f'Итого: {str(total_price)}  ₽.',
-                                          reply_markup=mark_up.gen_markup2())
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Вы перешли в корзину!')
-                    bot.send_message(chat_id,
-                                     text='Ваша корзина :\n\n'
-                                          f'➕ {m} ₽.\n\n'
-                                          f'Итого: {str(total_price)}  ₽.',
-                                     reply_markup=mark_up.gen_markup2())
-            if callback.data == 'примечания':
-                file_name = mark_up.call_value(chat_id, 'file_name')
-                if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
-                                               f'➕ {file_name}', reply_markup=mark_up.back())
-                else:
-                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text='Идём дальше! Напишите примечания к данному файлу ..\n\n'
-                                               f'➕ {file_name}', reply_markup=mark_up.back())
-                dbworker.set_state(str(chat_id), '2')
-            if callback.data == 'оформить':
-                markup = mark_up.gen_markup1(chat_id, total_price=mark_up.call_value(chat_id, 'total_price'))
-                mark_up.update_key(chat_id, 'message_id', callback.message.message_id)
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='❗Внимание❗\nЕсли кол-во страниц '
-                                           'не совпадает с действительностью, то рекомендуется выбрать "Оплата при получении"\n\n'
-                                           'Выберите тип оплаты ..', reply_markup=markup)
-            if callback.data == 'очистить':
-                mark_up.clear_basket(chat_id)
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='Ваша корзина очищена!', reply_markup=mark_up.inline_markup2())
-            if callback.data == 'добавить':
-                num = 1
-                mark_up.update_key(chat_id, 'num', num)
-                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                      text='❗Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать❗\n\n'
-                                           'Поддерживаю форматы:\n\n'
-                                           '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
-            if callback.data == 'назад':
+                mark_up.markup_num(num, callback, chat_id)
+            if callback.data == "корзина":
                 dbworker.set_state(str(chat_id), '1')
+                id_lot = mark_up.call_value(chat_id, 'id_lot')
+                mark_up.gg_basket(callback, id_lot)
+                mark_up.basket(chat_id, callback)
+            if callback.data == 'удалить позицию':
+                id_lot = mark_up.call_value(chat_id, 'id_lot')
+                db_users.delete_lot(id_lot)
                 if callback.inline_message_id == None:
-                    if mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                        markup = mark_up.plus_kanc(callback, num)
-                    else:
-                        markup = mark_up.plus(callback, num)
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id, text='Позиция удалена')
+                else:
+                    bot.edit_message_text(inline_message_id=callback.inline_message_id, text='Позиция удалена')
+                mark_up.check_basket(chat_id)
+            if callback.data == 'очистить':
+                mark_up.update_key(chat_id, 'dobavka', '')
+                mark_up.update_key(chat_id, 'price_dobavka', 0.0)
+                db_users.clear_basket(chat_id)
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text='Ваша корзина очищена!', reply_markup=mark_up.add_lot())
+            if callback.data == 'выполнение':
+                number_ship = mark_up.call_value(chat_id, 'number_ship')
+                bot.send_message(-1001302729558, f'Заказ номер: #{number_ship}\n\n')
+                bot.answer_callback_query(callback.id, "Ваш заказ в процессе приготовления!")
+            if callback.data == 'сбросить':
+                mark_up.update_key(chat_id, 'price_dobavka', 0.0)
+                markup = mark_up.dobavki(chat_id)
+                if callback.inline_message_id == None:
                     bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
-                                          text='Хорошо, выберите кол-во копий:', reply_markup=markup)
+                                          text='Добавки для напитков..\n(Можно выбрать один вариант)', reply_markup=markup)
                 else:
-                    if mark_up.call_value(chat_id, 'type_print') == 'Канцелярия':
-                        markup = mark_up.inline_plus_kanc(callback, num)
-                    else:
-                        markup = mark_up.inline_plus(callback, num)
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text='Хорошо, выберите кол-во копий:', reply_markup=markup)
-            if callback.data == 'Ч/Б Печать(распечатка)':
-                mark_up.pechat(a='Ч/Б копии/распечатка А4', price_print=2.5, callback=callback)
-            if callback.data == 'Печать фото 10х15':
-                mark_up.pechat(a='Печать фото 10х15', price_print=10.0, callback=callback)
-            if callback.data == 'Цветная печать А4':
-                mark_up.pechat(a='Цветная распечатка А4', price_print=20.0, callback=callback)
-            if callback.data == 'А4 Ч/Б двусторонняя':
-                price_print = 2.0
-                mark_up.callduty(price_print, callback)
-                num = mark_up.call_value(chat_id, 'num')
-                if num != 1:
-                    markup = mark_up.num_copy_markup2(callback, num)
-                else:
-                    markup = mark_up.num_copy_markup1()
+                                          text='Добавки для напитков..\n(Можно выбрать один вариант)',
+                                          reply_markup=markup)
+            if callback.data == 'добавки':
+                markup = mark_up.dobavki(chat_id)
+                dbworker.set_state(str(chat_id), 'dobavki')
                 if callback.inline_message_id == None:
-                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                          text='📌 А4 Ч/Б двусторонняя - 4 руб/стр.\n\n'
-                                               'Выберите кол-во копий:', reply_markup=markup)
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                          text='Добавки для напитков..\n(Можно выбрать один вариант)', reply_markup=markup)
                 else:
                     bot.edit_message_text(inline_message_id=callback.inline_message_id,
-                                          text='📌 А4 Ч/Б двусторонняя - 4 руб/стр.\n\n'
-                                               'Выберите кол-во копий:', reply_markup=markup)
-            if callback.data == 'Печать на фотобумаге':
-                mark_up.pechat(a='Печать на фотобумаге А4 (глянец, матовая)', price_print=30.0, callback=callback)
-            if callback.data == "later":
-                number = f'{str(chat_id)}-{mark_up.random_pool()}'
-                bot.answer_callback_query(callback.id, "Вы выбрали - По факту получения")
-                j = mark_up.result_ship(chat_id, 1)
-                m = mark_up.result_ship(chat_id, 0)
-                now = datetime.now()
-                today = datetime.today().strftime('%H:%M')
-                time_order = f"{now.year}-{now.month}-{now.day}  {today}"
-                from_chat_id = -1001302729558
-                type_pay = 'По факту получения'
-                name = f'{callback.from_user.first_name} {callback.from_user.last_name} @{callback.from_user.username}'
-                total_price = mark_up.call_value(chat_id, 'total_price')
-                bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
-                                      text=f'Супер!✅\nТеперь ваш заказ на сумму {str(total_price)} ₽ отправлен Копир-коту!'
-                                           f'✅\n\nПозиции заказа:\n\n➕ {j} ₽\n\nЗабрать заказ можете в любое рабочее время по адресу: Проспект Мира 80а, Красноярск (ТЦ АВЕНЮ, 4 этаж)\n\n'
-                                           f'Номер вашего заказа - {number}', reply_markup=mark_up.forward())
-                bot.send_message(from_chat_id, f'{m}'
-                                               f'_________________________________________\n\n'
-                                               f'Номер заказа - {number}\n'
-                                               f'Время заказа: {time_order}\n'
-                                               f'Заказчик: {name}\n'
-                                               f'Тип оплаты: {type_pay}\n\n'
-                                               f'Итого: {str(total_price)} руб.'
-                                 )
-                mark_up.forward_file(chat_id, number)
-                mark_up.clear_basket(chat_id)
-    except KeyError as a:
-        print(a)
-        chat_id = callback.from_user.id
-        if str(chat_id) in a:
-            mark_up.check_basket(chat_id)
-        else:
-            bot.send_message(chat_id,
-                         text='Отправьте, пожалуйста, ссылку на файл или сам файл, который нужно распечатать\n\n'
-                              'Поддерживаю форматы:\n\n'
-                              '✔pdf, docx, pptx, xlsx\n✔frw, cdw, dwg\n✔png, jpeg')
-        bot.send_message(481077652, str(a))
+                                          text='Добавки для напитков..\n(Можно выбрать один вариант)',
+                                          reply_markup=markup)
+            if callback.data == 'комент':
+                dbworker.set_state(str(chat_id), 'koment')
+                if callback.inline_message_id == None:
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                          text='Напишите комментарий к данной позиции:\n\n'
+                                               f'{name_lot}')
+                else:
+                    bot.edit_message_text(inline_message_id=callback.inline_message_id,
+                                          text='Напишите комментарий к данной позиции:\n\n'
+                                               f'{name_lot}',
+                                          reply_markup=mark_up.back())
+            if callback.data == 'назад_инлайн':
+                dbworker.set_state(str(chat_id), '1')
+                num = mark_up.call_value(chat_id, 'num')
+                markup = mark_up.num_markup2(callback, num)
+                name_lot = mark_up.call_value(chat_id, 'name_lot')
+                dobavka = mark_up.call_value(chat_id, 'dobavka')
+                a = 'Ничего не выбрано' if dobavka == ' ' else dobavka
+                price = mark_up.call_value(chat_id, 'price')
+                pic = mark_up.call_value(chat_id, 'pic')
+                size = mark_up.call_value(chat_id, 'size')
+                price_dobavka = mark_up.call_value(chat_id, 'price_dobavka')
+                print(price_dobavka)
+                price_dobavka = 0.0 if a == 'Ничего не выбрано' else price_dobavka
+                bot.edit_message_text(inline_message_id=callback.inline_message_id,
+                                      text=f"{name_lot}"
+                                           f"\n{size}\n{price} ₽\n\n"
+                                           f'Добавки:\n{a}'
+                                           f'\n\nЦена {(str((float(price) * num) + (price_dobavka * num)))} ₽'
+                                           f"[\xa0]({pic})", parse_mode='Markdown', reply_markup=markup)
+            if callback.data == 'оформить':
+                m = db_users.select_user(chat_id)
+                lots = []
+                for lot in m:
+                    jlot = json.loads(lot[0])
+                    tot_price = (jlot['num'] * (jlot['price']))
+                    basket_lot = jlot['name_lot'] + '  ' + str(jlot['num']) + ' шт.  ' + str(
+                    tot_price) + ' ₽\n    ' + jlot['dobavka']
+                    lots.append(basket_lot)
+                string = '\n✅ '.join(lots)
+                price = mark_up.call_value(chat_id, 'total_price')
+                price1 = price * 100
+                prices = [LabeledPrice(label=f'Стоимость услуги: ', amount=int(price1))]
+                number_ship = f'{str(chat_id)} - {str(mark_up.random_pool())}'
+                mark_up.update_key(chat_id, 'number_ship', number_ship)
+                title = f'Заказ: {number_ship}'
+                if price1 > 6569.0:
+                    bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text=f"Вы перешли к оплате заказа")
+                    bot.send_invoice(callback.from_user.id, provider_token='381764678:TEST:8408',
+                                     start_parameter='true',
+                                     title=title,
+                                     description=f'✅ {string}',
+                                     invoice_payload='test',
+                                     currency='RUB',
+                                     prices=prices,
+                                     need_phone_number=True,
+                                     photo_url='http://www.tobystevens.co.uk/wp-content/uploads/2012/04/7.-SAMSUNG_COFFEE_CAFE_LOGO_GRAPHIC.jpg',
+                                     photo_height=512,
+                                     photo_width=512,
+                                     photo_size=512,
+                                     )
+                else:
+                    bot.edit_message_text(chat_id=callback.from_user.id, message_id=callback.message.message_id,
+                                          text='К сожалению, Telegram обслуживает платежи не менее 1$\n'
+                                               f'Сумма вашего заказа: {price} ₽\n'
+                                               f'Добавьте в корзину позиции..',
+                                          reply_markup=mark_up.add_lot())
+            if "Ближайщее время" == callback.data:
+                markup = mark_up.time2(callback)
+                mark_up.update_key(chat_id, 'time', callback.data)
+                bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id, reply_markup=markup)
+            if 'мин.' in callback.data:
+                markup = mark_up.time2(callback)
+                mark_up.update_key(chat_id, 'time', callback.data)
+                bot.edit_message_reply_markup(callback.from_user.id, callback.message.message_id, reply_markup=markup)
+            if callback.data == 'добавить':
+                mark_up.update_key(chat_id, 'dobavka', ' ')
+                bot.edit_message_text(chat_id=chat_id, message_id=callback.message.message_id,
+                                      text='Выберите категорию', reply_markup=mark_up.catalog())
     except Exception as e:
         print(e)
-        chat_id = callback.from_user.id
-        if e == 'expected string or bytes-like object' or chat_id:
-            mark_up.check_basket(chat_id)
-        bot.send_message(481077652, str(e))
 
 
-"""
+
+
+
+
 @bot.shipping_query_handler(func=lambda query: True)
 def shipping(shipping_query):
     bot.answer_shipping_query(shipping_query.id, ok=True, shipping_options=False,
                               error_message='Oh, што-то пошло не так. Попробуйте повторить позже!')
+
 @bot.pre_checkout_query_handler(func=lambda query: True)
 def checkout(pre_checkout_query):
     bot.answer_pre_checkout_query(pre_checkout_query.id, ok=True,
                                   error_message="Проблемы с картой"
                                                 " повторите платеж позже.")
+
+
+
+
 @bot.message_handler(content_types=['successful_payment'])
 def got_payment(message):
     chat_id = message.chat.id
-    user = user_dict[chat_id]
-    number = str(mark_up.random_pool())
-    bot.send_message(message.from_user.id, 'Супер! Теперь ваш заказ отправлен..\nНомер вашего заказа - ' + number)
-    mark_up.result_ship(chat_id)
+    m = db_users.select_user(chat_id)
+    #total_price = db_users.lot_price(chat_id)
+    lots = []
+    for lot in m:
+        jlot = json.loads(lot[0])
+        tot_price = (jlot['num'] * (jlot['price']))
+        basket_lot = jlot['name_lot'] + '  ' + str(jlot['num']) + ' шт.  ' + str(
+            tot_price) + ' ₽\nДобавка:\n    ' + jlot['dobavka' +'\nКомментарий:    ' + jlot['koment']]
+        lots.append(basket_lot)
+    string = '\n\n✅ '.join(lots)
     from_chat_id = -1001302729558
     now = datetime.now()
-    hours = int(now.hour) + 7
-    time_order = str(f"{now.year}-{now.month}-{now.day}  {str(hours)}:{now.minute}")
-    type_pay = 'Наличные'
+    today = datetime.today().strftime('%H:%M')
+    time_order = f"{now.year}-{now.month}-{now.day}  {today}"
+    type_pay = 'Банк. карта'
     name = f'{message.from_user.first_name} {message.from_user.last_name} @{message.from_user.username}'
-    bot.edit_message_text(chat_id=message.from_user.id, message_id=message.message_id,
-                          text=f'Супер!✔\nТеперь ваш заказ отправлен✔\n\n💾 {j} ₽\n\nНомер вашего заказа - {number}')
-    bot.send_message(from_chat_id, f'{m}'
+    number_ship = mark_up.call_value(chat_id, 'number_ship')
+    total_price = mark_up.call_value(chat_id, 'total_price')
+    time = mark_up.call_value(chat_id, 'time')
+    bot.send_message(message.from_user.id, f'Супер! Теперь ваш заказ на сумму {str(total_price)} ₽ отправлен..\n\nПозиции заказа:\n\n'
+                                           f'✅ {string}\n\nНомер вашего заказа - {number_ship}\n'
+                                           f'Время выполнения: {time}',
+                     reply_markup=mark_up.common())
+    bot.send_message(from_chat_id, f'✅ {string} ₽\n'
                                    f'___________________________\n\n'
-                                   f'Номер заказа - {number}\n'
+                                   f'Номер заказа - {number_ship}\n'
                                    f'Время заказа: {time_order}\n'
+                                   f'Время выполнения: {time}\n'
                                    f'Заказчик: {name}\n'
                                    f'Тип оплаты: {type_pay}\n\n'
-                                   f'Итого: {str(user.total_price)} ₽.'
+                                   f'Итого: {str(total_price)} ₽.'
                      )
-    mark_up.clear_basket(chat_id)
-"""
+    db_users.clear_basket(chat_id)
+
 
 @server.route('/' + TOKEN, methods=['POST'])
 def getMessage():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "OK", 200
-
+"""
 @server.route('/' + 'PAYMENTS', methods=['POST'])
 def Check_Payments():
     try:
@@ -957,7 +724,7 @@ def Check_Payments():
         return "HTTP 200 OK", 200
     except Exception as e:
         print(e)
-    
+"""   
     
      
 
