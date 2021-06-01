@@ -19,7 +19,7 @@ pyTelegramBotAPI==3.6.6
 pytz==2018.5
 six==1.11.0
 telebot==0.0.3
-urllib3==1.23
+urllib3==1.26.5
 virtualenv==16.0.0
 virtualenv-clone==0.3.0
 Werkzeug==0.14.1
@@ -31,7 +31,7 @@ lxml==4.2.5
 pyPdf==1.13
 PyPDF2==1.26.0
 python-docx==0.8.7
-urllib3==1.23
+urllib3==1.26.5
 boto==2.49.0
 xlrd==1.1.0
 python-pptx==0.6.16
